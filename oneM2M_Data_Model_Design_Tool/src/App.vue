@@ -85,7 +85,7 @@ export default {
         }
       ],
       resources: [
-        { name: "CSE", id: 1  , ty: RT_CSE, tasks: [
+        
           { name: "AE", id: 2, ty: RT_AE, tasks:[
           ]  },
           { name: "CNT", id: 3, ty: RT_CNT },
@@ -93,7 +93,7 @@ export default {
           { name: "GRP", id: 5, ty: RT_GRP },
           { name: "SUB", id: 6, ty: RT_SUB },
           { name: "FCNT", id: 7, ty: RT_FCNT },
-        ] },
+         
         
         
       ]
