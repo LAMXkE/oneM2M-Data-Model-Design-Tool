@@ -3,7 +3,7 @@ import axios from 'axios';
 
 async function json_parser(data)
 {
-    // 웹에서 전달받은 json파일 파싱 및 resource_create함수에 전달.
+    // 웹에서 전달받은 json파일 파싱 및 resource_create함수에 전달
 }
 
 
