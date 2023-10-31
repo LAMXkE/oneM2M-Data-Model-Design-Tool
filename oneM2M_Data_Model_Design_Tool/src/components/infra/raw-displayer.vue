@@ -19,11 +19,13 @@ export default {
   props,
   computed: {
     valueString() {
+      sessionStorage.setItem("CSE1",JSON.stringify(this.value, null, 2));
       return JSON.stringify(this.value, null, 2);
     }
-  }
+  },
 };
 </script>
+
 <style scoped>
 pre {
   text-align: start;
