@@ -120,6 +120,14 @@ export default {
       document.body.appendChild(element);
       element.click();
     },
+  },
+  watch: {
+    cse1 : {
+      deep: true,
+      handler(){
+      sessionStorage.setItem("CSE1",JSON.stringify(this.cse1, null, 2));
+      }
+    }
   }
 };
 </script>
