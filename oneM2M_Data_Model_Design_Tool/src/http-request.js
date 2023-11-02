@@ -1,12 +1,6 @@
 import axios from 'axios';
 //import slave from './app.js'
 
-async function json_parser(data)
-{
-    // 웹에서 전달받은 json파일 파싱 및 resource_create함수에 전달
-}
-
-
 async function create_ae(url, rn)
 { 
     headers = {
@@ -18,7 +12,6 @@ async function create_ae(url, rn)
         'm2m:ae': {
             'api': api,
             'rn': rn,
-            'lbl': [],
             'rr': true
         }
     }
