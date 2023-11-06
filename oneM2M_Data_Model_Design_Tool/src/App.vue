@@ -63,6 +63,7 @@ const RT_TSR = 10;
 const RT_MGMTOBJ = 11;
 const RT_NODE = 14;
 
+
 export default {
   name: "App",
   display: "app",
@@ -70,7 +71,7 @@ export default {
   components: {
     draggable,
     VueDraggableResizable,
-    nestedDraggable
+    nestedDraggable,
     // rawDisplayer
 },
   data() {
@@ -95,9 +96,9 @@ export default {
           { name: "FCNT", id: 7, ty: RT_FCNT },
          
         
-        
       ]
     };
+
   },
   methods: {
     log: function(evt) {
@@ -105,11 +106,28 @@ export default {
     },
     saveResourceTree(){
       console.log("saveResourceTree");
-
+      this.exportTextFile();
     },
     createResourceTree(){
       console.log("createResourceTree");
     },
+    exportTextFile() {
+      const dataToSave = sessionStorage.getItem('CSE1');
+      const filename = 'storagedata.json';
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/json;charset=utf-8, ' + encodeURIComponent(dataToSave));
+      element.setAttribute('download', filename);
+      document.body.appendChild(element);
+      element.click();
+    },
+  },
+  watch: {
+    cse1 : {
+      deep: true,
+      handler(){
+      sessionStorage.setItem("CSE1",JSON.stringify(this.cse1, null, 2));
+      }
+    }
   }
 };
 </script>

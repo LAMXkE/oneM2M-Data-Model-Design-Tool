@@ -21,9 +21,10 @@ export default {
     valueString() {
       return JSON.stringify(this.value, null, 2);
     }
-  }
+  },
 };
 </script>
+
 <style scoped>
 pre {
   text-align: start;
