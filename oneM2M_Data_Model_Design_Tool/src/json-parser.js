@@ -18,18 +18,43 @@ function readJSONFile(filePath) {
     }
 }
 
-async function bfs_json(json_data){
-
-}
+function bfs_json(jsonData) {
+    const queue = [jsonData];
+  
+    while (queue.length > 0) {
+      const currentNode = queue.shift();
+  
+      if (Array.isArray(currentNode)) {
+        // 만약 현재 노드가 배열이면, 배열의 각 요소를 큐에 추가
+        for (const item of currentNode) {
+          queue.push(item);
+        }
+      } else if (typeof currentNode === 'object') {
+        // 만약 현재 노드가 객체이면, "name" 및 "ty" 값을 확인
+        if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
+          console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
+        }
+  
+        // 객체의 하위 항목을 큐에 추가
+        for (const key in currentNode) {
+          if (Array.isArray(currentNode[key]) || typeof currentNode[key] === 'object') {
+            queue.push(currentNode[key]);
+          }
+        }
+      }
+    }
+  }
 
 // JSON 데이터 가져오기
 const jsonObject = readJSONFile(jsonFilePath);
+
+//bfs_json(JSON.stringify(jsonObject, null));
 bfs_json(jsonObject);
 
-if (jsonObject) {
-    // JSON 데이터를 그대로 출력
-    console.log(JSON.stringify(jsonObject, null, 2));
-}
+// if (jsonObject) {
+//     // JSON 데이터를 그대로 출력
+//     console.log(JSON.stringify(jsonObject, null, 2));
+// }
 
 // if (jsonObject) {
 //     // jsonObject를 사용하여 JSON 데이터를 처리합니다.
