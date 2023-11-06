@@ -20,7 +20,7 @@ function readJSONFile(filePath) {
 
 function bfs_json(jsonData) {
     const queue = [jsonData];
-  
+    // ty 번호순서대로 create요청 보내기 
     while (queue.length > 0) {
       const currentNode = queue.shift();
   
