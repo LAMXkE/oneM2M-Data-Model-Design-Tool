@@ -1,6 +1,6 @@
 <template>
     <div class="titleBox">
-        <h2>Attributes</h2>
+        <p>Attributes</p>
         <div class="closeBtn" @click="confirmClose">
             <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                 viewBox="0 0 1436 1054" style="enable-background:new 0 0 1436 1054;" xml:space="preserve">
@@ -11,7 +11,7 @@
             
         </div>
     </div>
-    <form @submit.prevent="validate" id="attrForm">
+    <form @submit="validate" id="attrForm">
         <div>
             <div v-for="(content, key) in selectedElement" class="row" :key="key">
                 <div class="col-2 key">{{ key }}</div>
@@ -44,22 +44,22 @@
                 </div>
             </div>
         </div>
-        <div class="buttonBox">
-            <div class="btn" @click="">
-                <p><input type="submit" value="save" /></p>
-            </div>
-            <div v-if="this.element.ty != 5" class="delBtn">
-                <p>delete</p>
-            </div>
-        </div>
     </form>
+    <div class="buttonBox">
+        <div class="btn" @click="validate">
+            <p><input type="submit" value="save" /></p>
+        </div>
+        <div v-if="this.element.ty != 5" class="delBtn">
+            <p>delete</p>
+        </div>
+    </div>
 </template>
 
 <script>
 const RT_CSE = 5;
+const RT_ACP = 1;
 const RT_AE = 2;
 const RT_CNT = 3;
-const RT_ACP = 4;
 const RT_GRP = 9;
 const RT_SUB = 23;
 const RT_FCNT = 7;
@@ -80,6 +80,21 @@ const resourceAttributes = {
         'ri': {type: "String", required:false, disable: true, value: ''}, 
         'acpi': {type: "Array", required:false, disable: false, value: []},
         'ty': {type: "Number",  required:true, disable: true, value: 5},
+    },
+    1:{
+        'rn': {type: "String", required:false, disable: false, value: ''},
+        'ty': {type: "Number", required:true, disable: true, value: 1},
+        'ri': {type: "String", required:false, disable: true, value: ''},
+        'pi': {type: "String", required:false, disable: true, value: ''},
+        'ct': {type: "String", required:false, disable: false, value: ''},
+        'lt': {type: "String", required:false, disable: false, value: ''},
+        'lbl': {type: "Array", required:false, disable: false, value: []},
+        'acpi': {type: "Array", required:false, disable: false, value: []},
+        'et': {type: "String", required:false, disable: false, value: ''},
+        'st': {type: "Number", required:false, disable: false, value: 0},
+        'cr': {type: "Boolean", required:false, disable: false, value: false},
+        'pv': {type: "Array", required:false, disable: false, value: []},
+        'pvs': {type: "Array", required:false, disable: false, value: []},
     },
     2: {
         'rn': {type: "String", required:false, disable: false, value: ''},
@@ -183,6 +198,18 @@ export default {
         validate: function (evt){
             console.log(evt);
             evt.preventDefault();
+            for (const [key, value] of Object.entries(this.selectedElement)) {
+                if(value.required && value.value == ""){
+                    alert(key + " is required");
+                    return;
+                }
+                if(value.validation){
+                    if(!value.validation(value.value)){
+                        alert(key + " is not valid");
+                        return;
+                    }
+                }
+            }
             console.log(this.selectedElement);
             // this.save(element);
         },
@@ -224,6 +251,20 @@ export default {
 <style scoped>
 .attrSetUi {
     /* overflow-y: auto; */
+}
+
+.titleBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.titleBox p {
+    font-size: 25px;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
 }
 
 .selectAttr {
@@ -302,9 +343,6 @@ export default {
   cursor: pointer;
 }
 .closeBtn {
-    display: block;
-    position: absolute;
-    right: 10px;
     cursor: pointer;
     padding: 5px;
 }

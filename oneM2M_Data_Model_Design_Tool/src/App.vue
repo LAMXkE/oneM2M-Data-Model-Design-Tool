@@ -42,7 +42,7 @@
         <setAttrs 
         :element="selectedElement" 
         :setAttrModified="setAttrModified"
-        :close="() => { this.attrSetting = false; this.selectedElement = undefined; this.attrSettingModified = false;}"
+        :close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
         :save="(newElement) => {
           console.log(newElement);
           for ( element in newElement) {
@@ -67,9 +67,9 @@ import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
 
 const RT_CSE = 5;
+const RT_ACP = 1;
 const RT_AE = 2;
 const RT_CNT = 3;
-const RT_ACP = 4;
 const RT_GRP = 9;
 const RT_SUB = 23;
 const RT_FCNT = 7;
@@ -133,12 +133,17 @@ export default {
       }
       if(this.attrSettingModified){
         if(confirm("Are you sure to switch without saving?")){
+          this.selectedElement.selected = false;
           this.selectedElement = element;
           this.attrSettingModified = false;
+          element.selected = true;
         }
       }else{
+        if(this.selectedElement)
+          this.selectedElement.selected = false;
         this.selectedElement = element;
         this.attrSetting = true;
+        element.selected = true;
       }
     },
     setAttrModified(){
@@ -150,15 +155,19 @@ export default {
 };
 </script>
 <style scoped>
+#app{
+  overflow: hidden;
+}
+
 .body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   margin: 10px;
-  width: 100%;
   height: 100%;
   min-width: 1200px;
+  overflow: hidden;
 }
 
 .canvas {
@@ -167,7 +176,6 @@ export default {
   height: 80vh;
   padding: 10px;
   margin: 10px;
-  overflow: auto;
   background-color: #eee;
   border-radius: 5px;
 }
@@ -186,6 +194,7 @@ export default {
 .nav {
   margin-bottom: 15px;
   min-width: 1200px;
+  overflow: hidden;
 }
 
 .dragArea {
@@ -219,6 +228,18 @@ export default {
 .button {
   margin: 0px;
   padding: 10px;
+}
+
+.selectedBox {
+  border: 1px solid black;
+  border-radius: 5px;
+  margin: 5px;
+  padding: 5px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.0;
+  text-align: center;
+  width: 120px;
 }
 
 

@@ -9,11 +9,10 @@
       @change="log"
       item-key="id"
       :move="validateMove"
-      @drop="setDefaultAttribute"
     >
       <template #item="{ element }">
         <li class="resourceBox" @click.stop @click="this.clickMethod(element)">
-          <p>{{ element.name }}</p>
+          <p :class="{ selected: element.selected }">{{ element.name }}</p>
           <nested-draggable 
             v-if="element.tasks && getChildRT(element.ty).length > 0" 
             :tasks="element.tasks" 
@@ -31,9 +30,9 @@
   import draggable from "vuedraggable";
   import {v4 as uuidv4} from 'uuid';
   const RT_CSE = 5;
+  const RT_ACP = 1;
   const RT_AE = 2;
   const RT_CNT = 3;
-  const RT_ACP = 4;
   const RT_GRP = 9;
   const RT_SUB = 23;
   const RT_FCNT = 7;
@@ -45,6 +44,7 @@
 
   const resourceStructure = {
     5:[RT_AE, RT_GRP, RT_MGMTOBJ, RT_ACP, RT_FCNT, RT_CNT, RT_SUB],
+    1:[],
     2:[RT_CNT, RT_GRP, RT_SUB, RT_FCNT, RT_TS, RT_TSI, RT_TSR, RT_MGMTOBJ, RT_NODE],
     3:[RT_CNT, RT_FCNT, RT_TS],
     4:[],
@@ -102,8 +102,6 @@
           tasks: []
         }
       },
-      setDefaultAttribute(evt) {
-      },
       RTtoStr(ResourceType) {
         switch(ResourceType){
           case RT_CSE:
@@ -145,6 +143,18 @@
     list-style-type: none;
   }
 
+  .selected {
+    background-color: #ccc;
+    border: 2px solid orange !important;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 5px;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.0;
+    text-align: center;
+    width: 120px;
+  }
   .resourceBox p{
     min-height: 50px;
     outline: 1px;
@@ -160,4 +170,5 @@
     min-height: 30px;
     margin: 5px;
   }
+
   </style>
