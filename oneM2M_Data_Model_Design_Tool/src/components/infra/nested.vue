@@ -9,15 +9,16 @@
       @change="log"
       item-key="id"
       :move="validateMove"
-      @end="addParentResource"
+      @drop="setDefaultAttribute"
     >
       <template #item="{ element }">
-        <li class="resourceBox">
+        <li class="resourceBox" @click.stop @click="this.clickMethod(element)">
           <p>{{ element.name }}</p>
           <nested-draggable 
-            v-if="element.tasks" 
+            v-if="element.tasks && getChildRT(element.ty).length > 0" 
             :tasks="element.tasks" 
             :group="this.group"
+            :clickMethod="this.clickMethod"
             :childRT="getChildRT(element.ty)"
             />
         </li>
@@ -34,7 +35,7 @@
   const RT_CNT = 3;
   const RT_ACP = 4;
   const RT_GRP = 9;
-  const RT_SUB = 16;
+  const RT_SUB = 23;
   const RT_FCNT = 7;
   const RT_TS = 8;
   const RT_TSI = 9;
@@ -45,7 +46,7 @@
   const resourceStructure = {
     5:[RT_AE, RT_GRP, RT_MGMTOBJ, RT_ACP, RT_FCNT, RT_CNT, RT_SUB],
     2:[RT_CNT, RT_GRP, RT_SUB, RT_FCNT, RT_TS, RT_TSI, RT_TSR, RT_MGMTOBJ, RT_NODE],
-    3:[RT_FCNT, RT_TS],
+    3:[RT_CNT, RT_FCNT, RT_TS],
     4:[],
     9:[],
     16:[],
@@ -65,6 +66,11 @@
         required: false,
         type: Array,
         default: () => []
+      },
+      clickMethod: {
+        required: false,
+        type: Function,
+        default: () => {}
       }
     },
     components: {
@@ -76,17 +82,10 @@
     ,
     methods: {
       validateMove(evt) {
-        // console.log('validateMove');
-        // console.log(evt);
-        // console.log(evt);
-        // console.log(this.childRT) 
-        // console.log(evt.relatedContext.component.$parent.childRT);
         if(evt.relatedContext.component.$parent.childRT.indexOf(evt.draggedContext.element.ty) == -1){
-          // console.log('invalid');
           evt.willInsertAfter = false;
           return false;
         }
-        
         
         evt.willInsertAfter = true;
         return true;
@@ -103,9 +102,7 @@
           tasks: []
         }
       },
-      addParentResource(evt) {
-        // console.log("add", evt);
-        // console.log(evt.to); 
+      setDefaultAttribute(evt) {
       },
       RTtoStr(ResourceType) {
         switch(ResourceType){
