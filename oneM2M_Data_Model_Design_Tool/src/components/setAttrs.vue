@@ -47,7 +47,7 @@
     </form>
     <div class="buttonBox">
         <div class="btn" @click="validate">
-            <p><input type="submit" value="save" /></p>
+            <p>save</p>
         </div>
         <div v-if="this.element.ty != 5" class="delBtn">
             <p>delete</p>
@@ -56,18 +56,18 @@
 </template>
 
 <script>
-const RT_CSE = 5;
-const RT_ACP = 1;
-const RT_AE = 2;
-const RT_CNT = 3;
-const RT_GRP = 9;
-const RT_SUB = 23;
-const RT_FCNT = 7;
-const RT_TS = 8;
-const RT_TSI = 9;
-const RT_TSR = 10;
-const RT_MGMTOBJ = 11;
-const RT_NODE = 14;
+// const RT_CSE = 5;
+// const RT_ACP = 1;
+// const RT_AE = 2;
+// const RT_CNT = 3;
+// const RT_GRP = 9;
+// const RT_SUB = 23;
+// const RT_FCNT = 7;
+// const RT_TS = 8;
+// const RT_TSI = 9;
+// const RT_TSR = 10;
+// const RT_MGMTOBJ = 11;
+// const RT_NODE = 14;
 
 const resourceAttributes = {
     5: {
@@ -98,14 +98,13 @@ const resourceAttributes = {
     },
     2: {
         'rn': {type: "String", required:false, disable: false, value: ''},
-        'aei': {type: "String", required:true, disable: false, value: '', validation: (value) => { return true },},
+        'aei': {type: "String", required:true, disable: false, value: '', validation: (value) => { if(value[0] != 'N') return false; return true }},
         'api': {type: "String", required:false, disable: false, value: ''},
         'apn': {type: "String", required:false, disable: false, value: ''},
         'at': {type: "String", required:false, disable: false, value: ''},
         'aa': {type: "Array", required:false, disable: false, value: []},
-        'lbl': {type: "String", required:false, disable: false, value: ''},
+        'lbl': {type: "Array", required:false, disable: false, value: []},
         'acpi': {type: "Array", required:false, disable: false, value: []},
-        'pi': {type: "String", required:false, disable: true, value: ''},
         'rr': {type: "Boolean", required:false, disable: false, value: false},
         'ty': {type: "Number", required:true, disable: true, value: 2},
         'poa': {type: "Array", required:false, disable: false, value: []},
@@ -113,7 +112,6 @@ const resourceAttributes = {
     },
     3: {
         'rn': {type: "String", required:false, disable: false, value: ''},
-        'pi': {type: "String", required:false, disable: true, value: ''},
         'ty': {type: "Number", required:true, disable: true, value: 3},
         'lbl': {type: "Array", required:false, disable: false, value: []},
         'acpi': {type: "Array", required:false, disable: false, value: []},
@@ -127,19 +125,12 @@ const resourceAttributes = {
     9: {
         'aa': {type: "Array", required:false, disable: false, value: []},
         'rn': {type: "String", required:false, disable: false, value: ''},
-        'pi': {type: "String", required:false, disable: true, value: ''},
-        'ri': {type: "String", required:false, disable: true, value: ''},
         'ty': {type: "Number", required:true, disable: true, value: 9},
         'ct': {type: "String", required:false, disable: false, value: ''},
         'lt': {type: "String", required:false, disable: false, value: ''},
         'lbl': {type: "Array", required:false, disable: false, value: []},
         'acpi': {type: "Array", required:false, disable: false, value: []},
-        'et': {type: "String", required:false, disable: false, value: ''},
-        'st': {type: "Number", required:false, disable: false, value: 0},
         'cr': {type: "Boolean", required:false, disable: false, value: false},
-        'mni': {type: "Number", required:false, disable: false, value: 0},
-        'mbs': {type: "Number", required:false, disable: false, value: 0},
-        'mia': {type: "Number", required:false, disable: false, value: 0}
     }
 
 };
@@ -169,12 +160,27 @@ export default {
     },
     data() {
         return {
-            selectedElement: JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])),
+            sE: {}, 
             isModified: false,
         }
         
     },
     computed: {
+        selectedElement: {
+            get: function () {
+                var attrobj = JSON.parse(JSON.stringify(resourceAttributes[this.element.ty]));
+                Object.entries(attrobj).forEach(([key, value]) => {
+                    if(this.element[key])
+                        value.value = this.element[key];
+                });
+                return attrobj;
+            },
+            set: function (newValue) {
+                this.isModified = true;
+                this.setAttrModified();
+                this.sE = newValue;
+            }
+        }
     },
     watch: {
         element: {
@@ -184,38 +190,38 @@ export default {
             },
             deep: true
         },
-        selectedElement: {
-            handler: function (val, oldVal) {
-                if(this.isModified){
-                    this.setAttrModified();
-                }
-                this.isModified = true;
-            },
-            deep: true
-        }
+        // selectedElement: {
+        //     handler: function (val, oldVal) {
+        //         if(this.isModified){
+        //             this.setAttrModified();
+        //         }
+        //         this.isModified = true;
+        //     },
+        //     deep: true
+        // }
     },
     methods: {
         validate: function (evt){
-            console.log(evt);
+            // console.log(evt);
             evt.preventDefault();
             for (const [key, value] of Object.entries(this.selectedElement)) {
                 if(value.required && value.value == ""){
                     alert(key + " is required");
                     return;
                 }
+                // console.log(key, value);
+                // console.log(value.validation);
                 if(value.validation){
+                    console.log(value.validation(value.value));
                     if(!value.validation(value.value)){
                         alert(key + " is not valid");
                         return;
                     }
                 }
             }
-            console.log(this.selectedElement);
-            // this.save(element);
-        },
-        submitForm: function(evt){
-            const form = document.getElementById("attrForm");
-            form.submit();
+            // console.log(this.selectedElement);
+            this.save(this.selectedElement);
+            this.isModified = false;
         },
         confirmClose(){
             if(this.isModified){
@@ -236,7 +242,8 @@ export default {
                 if(str.value == ""){
                     return;
                 }
-                element.push(str.value);
+                element.find((item) => item == str.value) ? null : element.push(str.value);
+                // element.push(str.value);
                 str.value = "";
             }
             // evt.target.__vnode.value push(evt.target.value);

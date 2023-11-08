@@ -44,11 +44,12 @@
         :setAttrModified="setAttrModified"
         :close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
         :save="(newElement) => {
-          console.log(newElement);
-          for ( element in newElement) {
-            console.log(element);
-            this.selectedElement[key].value = value;
-          }
+          // console.log(newElement);
+          Object.entries(newElement).forEach(([key, value]) => {
+            // console.log(key, value);
+            this.selectedElement[key] = value.value;
+          });
+          this.attrSettingModified = false;
         }"
         />
     </div>
@@ -142,6 +143,7 @@ export default {
         if(this.selectedElement)
           this.selectedElement.selected = false;
         this.selectedElement = element;
+        this.attrSettingModified = false;
         this.attrSetting = true;
         element.selected = true;
       }
