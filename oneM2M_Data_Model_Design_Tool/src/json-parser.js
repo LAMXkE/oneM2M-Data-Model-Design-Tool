@@ -5,7 +5,7 @@
 const fs = require('fs'); // Node.js의 파일 시스템 모듈을 불러옵니다.
 
 // 로컬 JSON 파일의 경로 (여기서는 예시 파일 경로입니다. 실제 파일 경로로 변경해야 합니다.)
-const jsonFilePath = "storagedata.json"//local json file path;
+const jsonFilePath = "storagedata2.json"//local json file path;
 
 // JSON 파일을 읽어오는 함수
 function readJSONFile(filePath) {
@@ -18,14 +18,32 @@ function readJSONFile(filePath) {
     }
 }
 
-function send_request(currentNode)
+function make_request_resource(currentNode)
 {
   //ty, rn + resource 형성, http-request에 데이터 전송
   //ty에 따라서 호출해야하는 함수가 다름.. 
+
+  const cnt_resource = ['ty', 'rn', 'lbl', 'acpi', 'at', 'aa', 'cr', 'mni', 'mbs', 'mia'];
+  // if cr == true, value is NULL
+  //
+  const ae_resource = ['ty','rn', 'aei', 'api', 'apn', 'at', 'aa', 'lbl', 'acpi', 'rr', 'poa', 'nl', 'srv'];
+  const acp_resource = ['ty', 'rn', 'ri', 'pi', 'ct', 'lt', 'lbl', 'acpi', 'et', 'st', 'cr', 'pv', 'pvs'];
+  const grp_resource = [];
+  const sub_resource = [];
+
+  const resource = {};
+
   console.log(currentNode);
+  console.log(currentNode.ty);
 
-
+  const entries = Object.entries(currentNode);
+  
+  for (const [key, value] of entries) 
+  {
+  
+  }
 }
+
 
 function bfs_json(jsonData) {
     const queue = [jsonData];
@@ -43,7 +61,7 @@ function bfs_json(jsonData) {
         if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
           //console.log(currentNode);
           //console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
-          send_request(currentNode);
+          make_request_resource(currentNode);
         }
   
         // 객체의 하위 항목을 큐에 추가
