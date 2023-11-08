@@ -18,6 +18,15 @@ function readJSONFile(filePath) {
     }
 }
 
+function send_request(currentNode)
+{
+  //ty, rn + resource 형성, http-request에 데이터 전송
+  //ty에 따라서 호출해야하는 함수가 다름.. 
+  console.log(currentNode);
+
+
+}
+
 function bfs_json(jsonData) {
     const queue = [jsonData];
     // ty 번호순서대로 create요청 보내기 
@@ -32,7 +41,9 @@ function bfs_json(jsonData) {
       } else if (typeof currentNode === 'object') {
         // 만약 현재 노드가 객체이면, "name" 및 "ty" 값을 확인
         if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
-          console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
+          //console.log(currentNode);
+          //console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
+          send_request(currentNode);
         }
   
         // 객체의 하위 항목을 큐에 추가
