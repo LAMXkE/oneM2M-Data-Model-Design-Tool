@@ -71,9 +71,9 @@
     <div v-if="attrSetting" class="rightTab">
         <setAttrs 
         :element="selectedElement" 
-        :setAttrModified="() => {this.attrSettingModified = true;}"
-        :close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
-        :save="(newElement) => {
+        @modified="(status) => { this.attrSettingModified = status; }"
+        @close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
+        @save="(newElement, callback) => {
           this.attrSettingModified = false;
           Object.entries(newElement).forEach(([key, value]) => {
             if(value.value.length == 0)
@@ -88,7 +88,7 @@
             }else{
               this.selectedElement[key] = value.value;
             }
-
+            callback();
           });
         }"
         />

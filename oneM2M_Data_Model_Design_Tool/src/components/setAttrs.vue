@@ -1,10 +1,12 @@
 <template>
-    <div class="titleBox">
-        <p>Attributes</p>
-        <div class="closeBtn" @click="confirmClose">
-            <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+    <div>
+
+        <div class="titleBox">
+            <p>Attributes</p>
+            <div class="closeBtn" @click="confirmClose">
+                <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                 viewBox="0 0 1436 1054" style="enable-background:new 0 0 1436 1054;" xml:space="preserve">
-            <path d="M718.5,453.8l224-224.3c20.4-20.4,53.3-20.4,73.6,0c20.4,20.4,20.4,53.3,0,73.6l-224,224.6l224,224
+                <path d="M718.5,453.8l224-224.3c20.4-20.4,53.3-20.4,73.6,0c20.4,20.4,20.4,53.3,0,73.6l-224,224.6l224,224
                 c20.4,20.4,20.4,53.3,0,73.6c-20.4,20.4-53.3,20.4-73.6,0l-224-224l-224.6,224c-20.4,20.4-53.3,20.4-73.6,0
                 c-20.4-20.4-20.4-53.3,0-73.6l224-224L420.4,303.2c-20.5-20.4-20.5-53.3-0.1-73.6s53.3-20.4,73.6,0l224.6,224V453.8z"/>
             </svg>
@@ -16,49 +18,54 @@
             <div v-for="(content, key) in selectedElement" class="row" :key="key">
                 <div class="col-2 key">{{ key }}</div>
                 <div class="col-10 values">
-                    <select :name="key" v-if="content.type == 'Select'" v-model="content.value" class="selectAttr">
-                        <option v-for="option,key in content.options" :key="key" :value="option">{{ key }}</option>
+                    <select :name="key" v-if="content.type == 'Select'" v-model="content.value" @input="isModified=true" class="selectAttr">
+                        <option v-for="option,key2 in content.options" :key="key2" :value="option">{{ key2 }}</option>
                     </select>
-                    <select :name="key" v-if="content.type == 'Boolean'" v-model="content.value" class="selectAttr">
+                    <select :name="key" v-if="content.type == 'Boolean'" v-model="content.value" class="selectAttr" @input="isModified=true">
                         <option :value="true">true</option>
                         <option :value="false">false</option>
                     </select>
                     <div v-if="content.type=='Array'" class="arrayInput">
-                        <input :name="key" :disabled="content.disable" autocomplete="off" :required="content.required" v-on:keyup="(evt) => { addArrayItem(evt, content.value); } " />
+                        <input :name="key" 
+                        :disabled="content.disable" 
+                        autocomplete="off" 
+                        :required="content.required" 
+                        v-model="temp"
+                        v-on:keyup="(evt) => { addArrayItem(evt, content.value); }" 
+                        @input="isModified=true" />
                         <ul class="Arrayitems">
-                            <li v-for="item, idx in content.value" :key="idx" class="item">
-                                {{ item }}
-                                <button class="arrayDelete" @click="content.value.splice(idx, 1)">x</button>
+                            <li v-for="item2, idx2 in content.value" :key="idx2" class="item">
+                                {{ item2 }}
+                                <button class="arrayDelete" @click="content.value.splice(idx2, 1)">x</button>
                             </li>
                         </ul>
                     </div>
                     <div v-if="content.type=='Object'" class="objectInput">
-                        <div class="row" v-for="item, key, idx in content.obj" :key="idx">
+                        <div class="row" v-for="item2, key2, idx2 in content.obj" :key="idx2">
                             <div class="col-2">
-                                {{ key }}
+                                {{ key2 }}
                             </div>
                             <div class="col-10">
-
-                                {{ item }}
+                                {{ item2 }}
                             </div>
                         </div>
                     </div>
                     <div v-if="content.type=='Checkbox'" class="CheckboxInput">
                         <div v-for="option, idx in content.options" class="Checkbox" :key="idx">
-                            <input type="checkbox" v-model="content.value" :key="idx" :value="option">
+                            <input type="checkbox" v-model="content.value" :key="idx" :value="option" @input="isModified=true">
                             <span>
                                 {{ option }}
                             </span>
                         </div>
                     </div>
-                    <input v-if="content.type == 'String' || content.type == 'Number'" 
+                    <input v-if="content.type == 'text' || content.type == 'Number'" 
                     :name="key" 
                     :type="content.type" 
                     :disabled="content.disable" 
                     v-model="content.value" 
                     :required="content.required"
                     autocomplete="off"
-                    
+                    @input="isModified=true"
                     />
                 </div>
             </div>
@@ -69,6 +76,7 @@
             <p>save</p>
         </div>
     </div>
+</div>
 </template>
 
 <script>
@@ -97,19 +105,19 @@ const resourceType = {
 
 const resourceAttributes = {
     5: {
-        rn: {type: "String", required:false, disable: false, value: ''}, 
+        rn: {type: "text", required:false, disable: false, value: ''}, 
         lbl: {type: "Array", required:false, disable: false, value: []}, 
-        csi: {type: "String", required:true, disable: false, value: ''}, 
-        cst: {type: "Select", options:{IN: 1, MN: 2, ASN: 3}, required:true, disable: false, value: ''},  
-        cb: {type: "String", required:true, disable: false, value: ''},
-        pi: {type: "String", required:false, disable: true, value: ''}, 
-        ri: {type: "String", required:false, disable: true, value: ''}, 
+        csi: {type: "text", required:true, disable: false, value: ''}, 
+        cst: {type: "Select", options:{IN: 1, MN: 2, ASN: 3}, required:true, disable: false, value: 1},  
+        cb: {type: "text", required:true, disable: false, value: ''},
+        pi: {type: "text", required:false, disable: true, value: ''}, 
+        ri: {type: "text", required:false, disable: true, value: ''}, 
         acpi: {type: "Array", required:false, disable: false, value: []},
         ty: {type: "Number",  required:true, disable: true, value: 5},
     },
     1:{
         'rn': {
-            type: "String", 
+            type: "text", 
             required:false, 
             disable: false, 
             value: ''
@@ -170,32 +178,32 @@ const resourceAttributes = {
     },
     2: {
         'rn': {
-            type: "String", 
+            type: "text", 
             required:false, 
             disable: false, 
             value: ''
         },
         'aei': {
-            type: "String", 
+            type: "text", 
             required:true, 
             disable: false, 
             value: '', 
             validation: (value) => { if(value[0] != 'N') return false; return true }
         },
         'api': {
-            type: "String", 
+            type: "text", 
             required:false, 
             disable: false, 
             value: ''
         },
         'apn': {
-            type: "String", 
+            type: "text", 
             required:false, 
             disable: false, 
             value: ''
         },
         'at': {
-            type: "String", 
+            type: "text", 
             required:false, 
             disable: false, 
             value: ''
@@ -237,7 +245,7 @@ const resourceAttributes = {
             disable: false, 
             value: []},
         'nl': {
-            type: "String", 
+            type: "text", 
             required:false, 
             disable: false, 
             value: ''
@@ -250,7 +258,7 @@ const resourceAttributes = {
         },
     },
     3: {
-        'rn': {type: "String", required:false, disable: false, value: ''},
+        'rn': {type: "text", required:false, disable: false, value: ''},
         'lbl': {type: "Array", required:false, disable: false, value: []},
         'acpi': {type: "Array", required:false, disable: false, value: []},
         'at': {type: "Array", required:false, disable: false, value: []},
@@ -262,10 +270,10 @@ const resourceAttributes = {
         'ty': {type: "Number", required:true, disable: true, value: 3},
     },
     9: {
-        'rn': {type: "String", required:false, disable: false, value: ''},
+        'rn': {type: "text", required:false, disable: false, value: ''},
         'ty': {type: "Number", required:true, disable: true, value: 9},
-        'ct': {type: "String", required:false, disable: false, value: ''},
-        'lt': {type: "String", required:false, disable: false, value: ''},
+        'ct': {type: "text", required:false, disable: false, value: ''},
+        'lt': {type: "text", required:false, disable: false, value: ''},
         'mt': {type: "Select", options:resourceType, required: true, disable:false, value: 0},
         'csy': {type: "Select", options:{Abandon_Member: 1, Abandon_Group: 2, Set_Mixed: 3}, required: false, disable:false, value: 0},
         'lbl': {type: "Array", required:false, disable: false, value: []},
@@ -281,41 +289,35 @@ export default {
             type: Object,
             required: true,
         },
-        close: {
-            type: Function,
-            required: true,
-            default: () => {}
-        },
-        save: {
-            type: Function,
-            required: true,
-            default: () => {}
-        },
-        setAttrModified: {
-            type: Function,
-            required: true,
-            default: () => {}
-        }
     },
     data() {
         return {
             sE: JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])), 
             isModified: false,
+            loading: true,
         }
         
     },
     computed: {
         selectedElement: {
             get: function () {
-                var attrobj = this.sE;
-                Object.entries(attrobj).forEach(([key, value]) => {
-                    if(this.element[key])
-                        value.value = this.element[key];
-                });
-                return attrobj;
+                console.log('getter', this.sE);
+                return this.sE;
             },
             set: function (newValue) {
+                console.log(newValue);
+                Object.entries(this.element).forEach(([key, value]) => {
+                    if(newValue[key])
+                        newValue[key].value = value;
+                });
+                // Object.entries(newValue).forEach(([key, value]) => {
+                //     if(this.element[key])
+                //         value.value = this.element[key];
+                // });
+
+                console.log(newValue);
                 this.sE = newValue;
+                return this.sE;
             }
         }
     },
@@ -323,19 +325,16 @@ export default {
         element: {
             handler: function (val, oldVal) {
                 this.selectedElement = JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])); 
-                this.isModified = false;
+                this.isModified=false;
             },
             deep: true
         },
-        sE: {
-            handler: function (val, oldVal) {
-                if(this.isModified){
-                    this.setAttrModified();
-                }
-                this.isModified = true;
-            },
-            deep: true
+
+        isModified: function (val, oldVal) {
+            console.log(val);
+            this.$emit('modified', val);
         }
+        
     },
     methods: {
         validate: function (evt){
@@ -358,16 +357,16 @@ export default {
                 }
             }
             // console.log(this.selectedElement);
-            this.save(this.selectedElement);
+            this.$emit('save', this.selectedElement, ()=>{this.isModified = false;});
             this.isModified = false;
         },
         confirmClose(){
             if(this.isModified){
                 if(confirm("Are you sure to leave without saving?\nAll the changes will be lost.")){
-                    this.close();
+                    this.$emit('close', null);
                 }
             }else{
-                this.close();
+                this.$emit('close', null);
             }
         },
         addArrayItem(evt, element){
