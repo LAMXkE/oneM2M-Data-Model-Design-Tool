@@ -6,7 +6,6 @@
     <div class="canvas">
         <nestedDraggable 
           :tasks="cse1"
-          :deleteElement="deleteElement"
           style="padding-left: 0px;"
           :group="{
                     name: 'resourceTree', 
@@ -16,10 +15,40 @@
           :min-height="200"
           item-key="id"
           :clickMethod="setAttributes"
+          @move="(evt) => { this.isDragging = true; return true; }"
+          @end="(evt) => { this.isDragging = false; return false; }"
           :dragoverBubble="true"
+          class="dragArea resourceTree"
           >
 
           </nestedDraggable>
+          <div class="trashcan" v-if="isDragging">
+
+            <draggable
+            :group="{
+              name: 'trashcan',
+              pull: (element) => {console.log(element); return true; },
+              put: true,
+            }"
+              :list="[]"
+              class="dragArea"
+              item-key="id"
+              @change="(evt) => { isDragging = false; return evt;}"
+              >
+              <template #item="item">
+                <div class="">{{ item }}</div>
+                
+              </template>
+            </draggable>
+            <svg width="25px" height="25px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" version="1.1" id="Capa_1" viewBox="0 0 490.646 490.646" xml:space="preserve">
+                <g>
+                  <g>
+                    <path d="M399.179,67.285l-74.794,0.033L324.356,0L166.214,0.066l0.029,67.318l-74.802,0.033l0.025,62.914h307.739L399.179,67.285z     M198.28,32.11l94.03-0.041l0.017,35.262l-94.03,0.041L198.28,32.11z"/>
+                    <path d="M91.465,490.646h307.739V146.359H91.465V490.646z M317.461,193.372h16.028v250.259h-16.028V193.372L317.461,193.372z     M237.321,193.372h16.028v250.259h-16.028V193.372L237.321,193.372z M157.18,193.372h16.028v250.259H157.18V193.372z"/>
+                  </g>
+                </g>
+              </svg>
+          </div>
     </div>
     <div v-if="!attrSetting" class="rightTab">
       <nestedDraggable
@@ -42,21 +71,11 @@
     <div v-if="attrSetting" class="rightTab">
         <setAttrs 
         :element="selectedElement" 
-        :setAttrModified="setAttrModified"
-        :deleteElement="() => {
-          console.log(this.selectedElement);
-          this.attrSetting = false; 
-
-          
-          this.selectedElement = undefined; 
-          this.attrSettingModified = false;
-        }"
+        :setAttrModified="() => {this.attrSettingModified = true;}"
         :close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
         :save="(newElement) => {
-          // console.log(newElement);
           this.attrSettingModified = false;
           Object.entries(newElement).forEach(([key, value]) => {
-            console.log(key, value);
             if(value.value.length == 0)
               return;
 
@@ -135,15 +154,13 @@ export default {
       ,
       attrSetting : false,
       attrSettingModified: false,
+      isDragging: false,
       selectedElement: {}
     };
   },
   methods: {
     log: function(evt) {
       // window.console.log(evt);
-    },
-    deleteElement(evt){
-      console.log(evt);
     },  
     saveResourceTree(){
       console.log("saveResourceTree");
@@ -171,9 +188,6 @@ export default {
         this.attrSetting = true;
         element.selected = true;
       }
-    },
-    setAttrModified(){
-      this.attrSettingModified = true;
     }
   },
   watch: {
@@ -204,6 +218,8 @@ export default {
   margin: 10px;
   background-color: #eee;
   border-radius: 5px;
+  display: flex;
+  flex-direction: column;
 }
 
 .rightTab {
@@ -227,6 +243,25 @@ export default {
   border: 1px solid red;
   position: relative;
 
+}
+
+.resourceTree {
+  flex-grow: 1;
+}
+
+.trashcan {
+  height: 10%;
+}
+
+.trashcan .dragArea {
+  height: 100%;
+}
+.trashcan svg{
+  position: relative;
+  left: 49%;
+  bottom: 80%;
+  width: 40px;
+  height: 40px;
 }
 
 .serverName {

@@ -82,6 +82,9 @@
     ,
     methods: {
       validateMove(evt) {
+        if(evt.relatedContext.element == undefined){
+          return true;
+        }
         if(evt.relatedContext.component.$parent.childRT.indexOf(evt.draggedContext.element.ty) == -1){
           evt.willInsertAfter = false;
           return false;

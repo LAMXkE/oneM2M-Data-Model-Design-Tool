@@ -68,9 +68,6 @@
         <div class="btn" @click="validate">
             <p>save</p>
         </div>
-        <div v-if="this.element.ty != 5" class="delBtn" @click="deleteElement">
-            <p>delete</p>
-        </div>
     </div>
 </template>
 
@@ -298,13 +295,7 @@ export default {
             type: Function,
             required: true,
             default: () => {}
-        },
-        deleteElement: {
-            type: Function,
-            required: false,
-            default: () => {}
         }
-
     },
     data() {
         return {
@@ -511,8 +502,8 @@ export default {
 .CheckboxInput {
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-start;
+    justify-content: space-between;
+    align-items: center;
     gap: 5px;
 
 }
@@ -524,7 +515,7 @@ export default {
     align-content: center;
     justify-content: center;
     align-items: center;
-
+    gap: 5px;
 }
 
 .delBtn {
