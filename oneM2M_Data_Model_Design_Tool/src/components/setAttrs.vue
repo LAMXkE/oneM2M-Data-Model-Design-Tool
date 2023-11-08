@@ -32,6 +32,25 @@
                             </li>
                         </ul>
                     </div>
+                    <div v-if="content.type=='Object'" class="objectInput">
+                        <div class="row" v-for="item, key, idx in content.obj" :key="idx">
+                            <div class="col-2">
+                                {{ key }}
+                            </div>
+                            <div class="col-10">
+
+                                {{ item }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="content.type=='Checkbox'" class="CheckboxInput">
+                        <div v-for="option, idx in content.options" class="Checkbox" :key="idx">
+                            <input type="checkbox" v-model="content.value" :key="idx" :value="option">
+                            <span>
+                                {{ option }}
+                            </span>
+                        </div>
+                    </div>
                     <input v-if="content.type == 'String' || content.type == 'Number'" 
                     :name="key" 
                     :type="content.type" 
@@ -49,13 +68,23 @@
         <div class="btn" @click="validate">
             <p>save</p>
         </div>
-        <div v-if="this.element.ty != 5" class="delBtn">
+        <div v-if="this.element.ty != 5" class="delBtn" @click="deleteElement">
             <p>delete</p>
         </div>
     </div>
 </template>
 
 <script>
+const resourceType = {
+    Mixed: 0,
+    ACP: 1,
+    AE: 2,
+    CNT: 3,
+    CIN: 4,
+    CSE: 5,
+    GRP: 9,
+    CSR: 16,
+}
 // const RT_CSE = 5;
 // const RT_ACP = 1;
 // const RT_AE = 2;
@@ -71,48 +100,160 @@
 
 const resourceAttributes = {
     5: {
-        'rn': {type: "String", required:false, disable: false, value: ''}, 
-        'lbl': {type: "Array", required:false, disable: false, value: []}, 
-        'csi': {type: "String", required:true, disable: false, value: ''}, 
-        'cst': {type: "Select", options:{IN: 1, MN: 2, ASN: 3}, required:true, disable: false, value: ''},  
-        'cb': {type: "String", required:true, disable: false, value: ''},
-        'pi': {type: "String", required:false, disable: true, value: ''}, 
-        'ri': {type: "String", required:false, disable: true, value: ''}, 
-        'acpi': {type: "Array", required:false, disable: false, value: []},
-        'ty': {type: "Number",  required:true, disable: true, value: 5},
+        rn: {type: "String", required:false, disable: false, value: ''}, 
+        lbl: {type: "Array", required:false, disable: false, value: []}, 
+        csi: {type: "String", required:true, disable: false, value: ''}, 
+        cst: {type: "Select", options:{IN: 1, MN: 2, ASN: 3}, required:true, disable: false, value: ''},  
+        cb: {type: "String", required:true, disable: false, value: ''},
+        pi: {type: "String", required:false, disable: true, value: ''}, 
+        ri: {type: "String", required:false, disable: true, value: ''}, 
+        acpi: {type: "Array", required:false, disable: false, value: []},
+        ty: {type: "Number",  required:true, disable: true, value: 5},
     },
     1:{
-        'rn': {type: "String", required:false, disable: false, value: ''},
-        'ty': {type: "Number", required:true, disable: true, value: 1},
-        'ri': {type: "String", required:false, disable: true, value: ''},
-        'pi': {type: "String", required:false, disable: true, value: ''},
-        'ct': {type: "String", required:false, disable: false, value: ''},
-        'lt': {type: "String", required:false, disable: false, value: ''},
-        'lbl': {type: "Array", required:false, disable: false, value: []},
-        'acpi': {type: "Array", required:false, disable: false, value: []},
-        'et': {type: "String", required:false, disable: false, value: ''},
-        'st': {type: "Number", required:false, disable: false, value: 0},
-        'cr': {type: "Boolean", required:false, disable: false, value: false},
-        'pv': {type: "Array", required:false, disable: false, value: []},
-        'pvs': {type: "Array", required:false, disable: false, value: []},
+        'rn': {
+            type: "String", 
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'lbl': {
+            type: "Array", 
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'cr': {
+            type: "Boolean", 
+            required:false, 
+            disable: false, 
+            value: false
+        },
+        pv: {
+            type: "Object", 
+            required:false, 
+            disable: false, 
+            obj: {
+                type: "Object",
+                acr: {
+                    type: "Object", required:false, disable: false, obj: {
+                        acop: {type: "Number", required:false, disable: false, value: 0},
+                        acor: {type: "Array", required:false, disable: false, value: []},
+                        acco: {type: "Object", required:false, disable: false, obj: {
+                                acip:{type: "Object", required:false, disable: false, obj: {
+                                        ipv4: {type: "Array", required:false, disable: false, value: []},
+                                        ipv6: {type: "Array", required:false, disable: false, value: []},
+                                    }
+                                },
+                            }
+                        },
+                    }
+                },
+                
+            }
+        },
+        'pvs': {
+            type: "Object", 
+            required:true, 
+            disable: false, 
+            obj: {
+                type: "Object",
+                acr: {type: "Array", required:false, disable: false, value: []},
+                acor: {type: "Array", required:false, disable: false, value: []},
+                acop: {type: "Number", required:false, disable: false, value: 0},
+                acco: {type: "Object", required:false, disable: false, obj: {}},
+            }
+        },
+        'ty': {
+            type: "Number", 
+            required:true, 
+            disable: true, 
+            value: 1
+        },
     },
     2: {
-        'rn': {type: "String", required:false, disable: false, value: ''},
-        'aei': {type: "String", required:true, disable: false, value: '', validation: (value) => { if(value[0] != 'N') return false; return true }},
-        'api': {type: "String", required:false, disable: false, value: ''},
-        'apn': {type: "String", required:false, disable: false, value: ''},
-        'at': {type: "String", required:false, disable: false, value: ''},
-        'aa': {type: "Array", required:false, disable: false, value: []},
-        'lbl': {type: "Array", required:false, disable: false, value: []},
-        'acpi': {type: "Array", required:false, disable: false, value: []},
-        'rr': {type: "Boolean", required:false, disable: false, value: false},
-        'ty': {type: "Number", required:true, disable: true, value: 2},
-        'poa': {type: "Array", required:false, disable: false, value: []},
-        'nl': {type: "String", required:false, disable: false, value: ''},
+        'rn': {
+            type: "String", 
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'aei': {
+            type: "String", 
+            required:true, 
+            disable: false, 
+            value: '', 
+            validation: (value) => { if(value[0] != 'N') return false; return true }
+        },
+        'api': {
+            type: "String", 
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'apn': {
+            type: "String", 
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'at': {
+            type: "String", 
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'aa': {
+            type: "Array", 
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'lbl': {
+            type: "Array", 
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'acpi': {
+            type: "Array", 
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'rr': {
+            type: "Boolean", 
+            required:false, 
+            disable: false, 
+            value: false
+        },
+        'srv': {
+            type: "Checkbox", 
+            options:['1', '2', '2a', '3', '4', '5'], 
+            required:true, 
+            disable: false, 
+            value: ['2a','3']
+        },
+        'poa': {
+            type: "Array", 
+            required:false, 
+            disable: false, 
+            value: []},
+        'nl': {
+            type: "String", 
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'ty': {
+            type: "Number", 
+            required:true, 
+            disable: true, 
+            value: 2
+        },
     },
     3: {
         'rn': {type: "String", required:false, disable: false, value: ''},
-        'ty': {type: "Number", required:true, disable: true, value: 3},
         'lbl': {type: "Array", required:false, disable: false, value: []},
         'acpi': {type: "Array", required:false, disable: false, value: []},
         'at': {type: "Array", required:false, disable: false, value: []},
@@ -120,14 +261,16 @@ const resourceAttributes = {
         'cr': {type: "Boolean", required:false, disable: false, value: false},
         'mni': {type: "Number", required:false, disable: false, value: 0},
         'mbs': {type: "Number", required:false, disable: false, value: 0},
-        'mia': {type: "Number", required:false, disable: false, value: 0}
+        'mia': {type: "Number", required:false, disable: false, value: 0},
+        'ty': {type: "Number", required:true, disable: true, value: 3},
     },
     9: {
-        'aa': {type: "Array", required:false, disable: false, value: []},
         'rn': {type: "String", required:false, disable: false, value: ''},
         'ty': {type: "Number", required:true, disable: true, value: 9},
         'ct': {type: "String", required:false, disable: false, value: ''},
         'lt': {type: "String", required:false, disable: false, value: ''},
+        'mt': {type: "Select", options:resourceType, required: true, disable:false, value: 0},
+        'csy': {type: "Select", options:{Abandon_Member: 1, Abandon_Group: 2, Set_Mixed: 3}, required: false, disable:false, value: 0},
         'lbl': {type: "Array", required:false, disable: false, value: []},
         'acpi': {type: "Array", required:false, disable: false, value: []},
         'cr': {type: "Boolean", required:false, disable: false, value: false},
@@ -155,12 +298,17 @@ export default {
             type: Function,
             required: true,
             default: () => {}
+        },
+        deleteElement: {
+            type: Function,
+            required: false,
+            default: () => {}
         }
 
     },
     data() {
         return {
-            sE: {}, 
+            sE: JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])), 
             isModified: false,
         }
         
@@ -168,7 +316,7 @@ export default {
     computed: {
         selectedElement: {
             get: function () {
-                var attrobj = JSON.parse(JSON.stringify(resourceAttributes[this.element.ty]));
+                var attrobj = this.sE;
                 Object.entries(attrobj).forEach(([key, value]) => {
                     if(this.element[key])
                         value.value = this.element[key];
@@ -176,8 +324,6 @@ export default {
                 return attrobj;
             },
             set: function (newValue) {
-                this.isModified = true;
-                this.setAttrModified();
                 this.sE = newValue;
             }
         }
@@ -190,22 +336,23 @@ export default {
             },
             deep: true
         },
-        // selectedElement: {
-        //     handler: function (val, oldVal) {
-        //         if(this.isModified){
-        //             this.setAttrModified();
-        //         }
-        //         this.isModified = true;
-        //     },
-        //     deep: true
-        // }
+        sE: {
+            handler: function (val, oldVal) {
+                if(this.isModified){
+                    this.setAttrModified();
+                }
+                this.isModified = true;
+            },
+            deep: true
+        }
     },
     methods: {
         validate: function (evt){
             // console.log(evt);
             evt.preventDefault();
             for (const [key, value] of Object.entries(this.selectedElement)) {
-                if(value.required && value.value == ""){
+                if(value.required && value.value === ""){
+                    // console.log(key, value.value);
                     alert(key + " is required");
                     return;
                 }
@@ -359,6 +506,25 @@ export default {
     justify-content: space-around;
     margin-top: 20px;
     width: auto;
+}
+
+.CheckboxInput {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 5px;
+
+}
+
+.CheckboxInput .Checkbox {
+
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+
 }
 
 .delBtn {

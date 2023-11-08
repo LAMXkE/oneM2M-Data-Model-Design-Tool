@@ -95,12 +95,10 @@
       },
       cloneResource(evt) {
         // console.log("cloneResource", evt);
-        return {
-          name: evt.name,
-          ty: evt.ty,
-          id: uuidv4(),
-          tasks: []
-        }
+        let newElement = JSON.parse(JSON.stringify(evt));
+        newElement.id = uuidv4();
+        newElement.tasks = [];
+        return newElement;
       },
       RTtoStr(ResourceType) {
         switch(ResourceType){

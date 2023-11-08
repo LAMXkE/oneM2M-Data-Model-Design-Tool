@@ -6,6 +6,7 @@
     <div class="canvas">
         <nestedDraggable 
           :tasks="cse1"
+          :deleteElement="deleteElement"
           style="padding-left: 0px;"
           :group="{
                     name: 'resourceTree', 
@@ -42,14 +43,34 @@
         <setAttrs 
         :element="selectedElement" 
         :setAttrModified="setAttrModified"
+        :deleteElement="() => {
+          console.log(this.selectedElement);
+          this.attrSetting = false; 
+
+          
+          this.selectedElement = undefined; 
+          this.attrSettingModified = false;
+        }"
         :close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
         :save="(newElement) => {
           // console.log(newElement);
-          Object.entries(newElement).forEach(([key, value]) => {
-            // console.log(key, value);
-            this.selectedElement[key] = value.value;
-          });
           this.attrSettingModified = false;
+          Object.entries(newElement).forEach(([key, value]) => {
+            console.log(key, value);
+            if(value.value.length == 0)
+              return;
+
+            if(value.value == 0){
+              return;
+            }
+
+            if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
+              this.selectedElement[key] = parseInt(value.value);
+            }else{
+              this.selectedElement[key] = value.value;
+            }
+
+          });
         }"
         />
     </div>
@@ -121,6 +142,9 @@ export default {
     log: function(evt) {
       // window.console.log(evt);
     },
+    deleteElement(evt){
+      console.log(evt);
+    },  
     saveResourceTree(){
       console.log("saveResourceTree");
 
