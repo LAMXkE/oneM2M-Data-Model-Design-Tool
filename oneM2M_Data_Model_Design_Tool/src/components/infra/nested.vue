@@ -106,6 +106,7 @@
         let newElement = JSON.parse(JSON.stringify(evt));
         newElement.id = uuidv4();
         newElement.tasks = [];
+        newElement.attrs={};
         return newElement;
       },
       RTtoStr(ResourceType) {

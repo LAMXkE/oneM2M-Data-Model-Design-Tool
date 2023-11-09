@@ -30,8 +30,8 @@
                         :disabled="content.disable" 
                         autocomplete="off" 
                         :required="content.required" 
-                        v-model="temp"
-                        v-on:keyup="(evt) => { addArrayItem(evt, content.value); }" 
+                        v-model="content.raw_value"
+                        v-on:keyup="(evt) => { addArrayItem(evt, content, content.value); }" 
                         @input="isModified=true" />
                         <ul class="Arrayitems">
                             <li v-for="item2, idx2 in content.value" :key="idx2" class="item">
@@ -106,13 +106,13 @@ const resourceType = {
 const resourceAttributes = {
     5: {
         rn: {type: "text", required:false, disable: false, value: ''}, 
-        lbl: {type: "Array", required:false, disable: false, value: []}, 
+        lbl: {type: "Array", required:false, disable: false, value: [],  raw_value: ''}, 
         csi: {type: "text", required:true, disable: false, value: ''}, 
         cst: {type: "Select", options:{IN: 1, MN: 2, ASN: 3}, required:true, disable: false, value: 1},  
         cb: {type: "text", required:true, disable: false, value: ''},
         pi: {type: "text", required:false, disable: true, value: ''}, 
         ri: {type: "text", required:false, disable: true, value: ''}, 
-        acpi: {type: "Array", required:false, disable: false, value: []},
+        acpi: {type: "Array", required:false, disable: false, value: [], raw_value: ''},
         ty: {type: "Number",  required:true, disable: true, value: 5},
     },
     1:{
@@ -126,7 +126,8 @@ const resourceAttributes = {
             type: "Array", 
             required:false, 
             disable: false, 
-            value: []
+            value: [],
+            raw_value: ''
         },
         'cr': {
             type: "Boolean", 
@@ -212,19 +213,22 @@ const resourceAttributes = {
             type: "Array", 
             required:false, 
             disable: false, 
-            value: []
+            value: [],
+            raw_value: ''
         },
         'lbl': {
             type: "Array", 
             required:false, 
             disable: false, 
-            value: []
+            value: [],
+            raw_value: ''
         },
         'acpi': {
             type: "Array", 
             required:false, 
             disable: false, 
-            value: []
+            value: [],
+            raw_value: ''
         },
         'rr': {
             type: "Boolean", 
@@ -243,7 +247,8 @@ const resourceAttributes = {
             type: "Array", 
             required:false, 
             disable: false, 
-            value: []},
+            value: [],  
+            raw_value: ''},
         'nl': {
             type: "text", 
             required:false, 
@@ -259,10 +264,10 @@ const resourceAttributes = {
     },
     3: {
         'rn': {type: "text", required:false, disable: false, value: ''},
-        'lbl': {type: "Array", required:false, disable: false, value: []},
-        'acpi': {type: "Array", required:false, disable: false, value: []},
-        'at': {type: "Array", required:false, disable: false, value: []},
-        'aa': {type: "Array", required:false, disable: false, value: []},
+        'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'at': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'aa': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
         'cr': {type: "Boolean", required:false, disable: false, value: false},
         'mni': {type: "Number", required:false, disable: false, value: 0},
         'mbs': {type: "Number", required:false, disable: false, value: 0},
@@ -276,8 +281,8 @@ const resourceAttributes = {
         'lt': {type: "text", required:false, disable: false, value: ''},
         'mt': {type: "Select", options:resourceType, required: true, disable:false, value: 0},
         'csy': {type: "Select", options:{Abandon_Member: 1, Abandon_Group: 2, Set_Mixed: 3}, required: false, disable:false, value: 0},
-        'lbl': {type: "Array", required:false, disable: false, value: []},
-        'acpi': {type: "Array", required:false, disable: false, value: []},
+        'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
         'cr': {type: "Boolean", required:false, disable: false, value: false},
     }
 
@@ -304,8 +309,7 @@ export default {
                 return this.sE;
             },
             set: function (newValue) {
-                console.log(newValue);
-                Object.entries(this.element).forEach(([key, value]) => {
+                Object.entries(this.element.attrs).forEach(([key, value]) => {
                     if(newValue[key])
                         newValue[key].value = value;
                 });
@@ -362,10 +366,12 @@ export default {
                 this.$emit('close', null);
             }
         },
-        addArrayItem(evt, element){
+        addArrayItem(evt, content, element){
             if(evt?.code =='Comma'){
+                console.log(content);
                 var str = evt.target;
                 if(str.value.length < 0 || str.value == ""){
+                    str.value="";
                     return;
                 }
                 str.value = str.value.replace(/,/g, "");
@@ -373,11 +379,8 @@ export default {
                     return;
                 }
                 element.find((item) => item == str.value) ? null : element.push(str.value);
-                // element.push(str.value);
-                str.value = "";
+                content.raw_value = "";
             }
-            // evt.target.__vnode.value push(evt.target.value);
-            // this.buffer = "";
         },
     }
     

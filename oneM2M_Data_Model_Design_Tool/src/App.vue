@@ -85,9 +85,9 @@
             }
 
             if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
-              this.selectedElement[key] = parseInt(value.value);
+              this.selectedElement.attrs[key] = parseInt(value.value);
             }else{
-              this.selectedElement[key] = value.value;
+              this.selectedElement.attrs[key] = value.value;
             }
             callback();
           });
@@ -141,7 +141,10 @@ export default {
           name: "CSE1",
           ty: RT_CSE,
           tasks: [
-          ]
+          ],
+          attrs:{
+
+          }
         }
       ],
       resources: [
@@ -192,9 +195,7 @@ export default {
         this.attrSetting = true;
         element.selected = true;
       }
-    }
-  },
-  watch: {
+    },
     exportTextFile() {
       const dataToSave = sessionStorage.getItem('CSE1');
       const filename = 'storagedata.json';
@@ -204,6 +205,8 @@ export default {
       document.body.appendChild(element);
       element.click();
     },
+  },
+  watch: {
     cse1 : {
       deep: true,
       handler(){
