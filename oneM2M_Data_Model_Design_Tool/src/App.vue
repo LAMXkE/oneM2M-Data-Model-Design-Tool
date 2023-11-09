@@ -1,26 +1,56 @@
 <template>
-  <div class="row">
-    <div class="col-8">
-          <div style="height: 500px; width: 100%; border: 1px solid red; position: relative; padding: 25px;">
-            
-          <nestedDraggable 
-            :tasks="cse1"
-            style="padding-left: 0px;"
-            :group="{
-                      name: 'resourceTree', 
-                      pull: true,
-                      put: true
-                    }"
-            :min-height="200"
-            item-key="id"
-            :dragoverBubble="true"
-             >
+  <header>
+    <navBar class="nav" />
+  </header>
+  <div class="body">
+    <div class="canvas">
+        <nestedDraggable 
+          :tasks="cse1"
+          style="padding-left: 0px;"
+          :group="{
+                    name: 'resourceTree', 
+                    pull: true,
+                    put: true
+                  }"
+          :min-height="200"
+          item-key="id"
+          :clickMethod="setAttributes"
+          @move="(evt) => { this.isDragging = true; return true; }"
+          @end="(evt) => { this.isDragging = false; return false; }"
+          :dragoverBubble="true"
+          class="dragArea resourceTree"
+          >
 
-             </nestedDraggable>
-          
-        </div>
+          </nestedDraggable>
+          <div class="trashcan" v-if="isDragging">
+
+            <draggable
+            :group="{
+              name: 'trashcan',
+              pull: (element) => {console.log(element); return true; },
+              put: true,
+            }"
+              :list="[]"
+              class="dragArea"
+              item-key="id"
+              @change="(evt) => { isDragging = false; return evt;}"
+              >
+              <template #item="item">
+                <div class="">{{ item }}</div>
+                
+              </template>
+            </draggable>
+            <svg width="25px" height="25px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" version="1.1" id="Capa_1" viewBox="0 0 490.646 490.646" xml:space="preserve">
+                <g>
+                  <g>
+                    <path d="M399.179,67.285l-74.794,0.033L324.356,0L166.214,0.066l0.029,67.318l-74.802,0.033l0.025,62.914h307.739L399.179,67.285z     M198.28,32.11l94.03-0.041l0.017,35.262l-94.03,0.041L198.28,32.11z"/>
+                    <path d="M91.465,490.646h307.739V146.359H91.465V490.646z M317.461,193.372h16.028v250.259h-16.028V193.372L317.461,193.372z     M237.321,193.372h16.028v250.259h-16.028V193.372L237.321,193.372z M157.18,193.372h16.028v250.259H157.18V193.372z"/>
+                  </g>
+                </g>
+              </svg>
+          </div>
     </div>
-    <div class="col-2">
+    <div v-if="!attrSetting" class="rightTab">
       <nestedDraggable
         class="dragArea resources list-items"
         :tasks="resources"
@@ -30,32 +60,59 @@
       >
       </nestedDraggable>
       <div class="buttonBox">
-        <div class="button" style="background-color: aqua;" @click="createResourceTree">
+        <div class="btn button" style="background-color: aqua;" @click="createResourceTree">
           Create
         </div>
-        <div class="button" style="background-color: aquamarine;" @click="saveResourceTree">
+        <div class="btn button" style="background-color: aquamarine;" @click="saveResourceTree">
           Save
         </div>
       </div>
     </div>
+    <div v-if="attrSetting" class="rightTab">
+        <setAttrs 
+        :element="selectedElement" 
+        @modified="(status) => { this.attrSettingModified = status; }"
+        @close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
+        @save="(newElement, callback) => {
+          this.attrSettingModified = false;
+          Object.entries(newElement).forEach(([key, value]) => {
+            if(value.value.length == 0)
+              return;
 
-    <rawDisplayer class="col-3" :value="cse1" title="List 1" />
+            if(value.value == 0){
+              return;
+            }
 
-    <rawDisplayer class="col-3" :value="resources" title="List 2" />
+            if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
+              this.selectedElement[key] = parseInt(value.value);
+            }else{
+              this.selectedElement[key] = value.value;
+            }
+            callback();
+          });
+        }"
+        />
+    </div>
+
   </div>
+  <rawDisplayer class="col-4" :value="cse1" title="List 1" />
+
+  <rawDisplayer class="col-4" :value="resources" title="List 2" />
 </template>
 
 <script>
 import draggable from "vuedraggable";
 import VueDraggableResizable  from "vue-draggable-resizable-vue3";
 import nestedDraggable from "@/components/infra/nested.vue";
+import setAttrs from "@/components/setAttrs.vue";
+import navBar from "@/components/navBar.vue";
 
 const RT_CSE = 5;
+const RT_ACP = 1;
 const RT_AE = 2;
 const RT_CNT = 3;
-const RT_ACP = 4;
 const RT_GRP = 9;
-const RT_SUB = 16;
+const RT_SUB = 23;
 const RT_FCNT = 7;
 const RT_TS = 8;
 const RT_TSI = 9;
@@ -69,41 +126,44 @@ export default {
   display: "app",
   order: 3,
   components: {
+    navBar,
     draggable,
     VueDraggableResizable,
     nestedDraggable,
+    setAttrs
     // rawDisplayer
-},
+  },
   data() {
     return {
       cse1: [
       {
           name: "CSE1",
           ty: RT_CSE,
-          parent: undefined,
           tasks: [
           ]
         }
       ],
       resources: [
         
-          { name: "AE", id: 2, ty: RT_AE, tasks:[
-          ]  },
+          { name: "AE", id: 2, ty: RT_AE },
           { name: "CNT", id: 3, ty: RT_CNT },
           { name: "ACP", id: 4, ty: RT_ACP },
           { name: "GRP", id: 5, ty: RT_GRP },
           { name: "SUB", id: 6, ty: RT_SUB },
           { name: "FCNT", id: 7, ty: RT_FCNT },
-         
-        
       ]
+      ,
+      attrSetting : false,
+      attrSettingModified: false,
+      isDragging: false,
+      selectedElement: {}
     };
 
   },
   methods: {
     log: function(evt) {
       // window.console.log(evt);
-    },
+    },  
     saveResourceTree(){
       console.log("saveResourceTree");
       this.exportTextFile();
@@ -111,6 +171,29 @@ export default {
     createResourceTree(){
       console.log("createResourceTree");
     },
+
+    setAttributes(element){
+      if(element == this.selectedElement){
+        return;
+      }
+      if(this.attrSettingModified){
+        if(confirm("Are you sure to switch without saving?")){
+          this.selectedElement.selected = false;
+          this.selectedElement = element;
+          this.attrSettingModified = false;
+          element.selected = true;
+        }
+      }else{
+        if(this.selectedElement)
+          this.selectedElement.selected = false;
+        this.selectedElement = element;
+        this.attrSettingModified = false;
+        this.attrSetting = true;
+        element.selected = true;
+      }
+    }
+  },
+  watch: {
     exportTextFile() {
       const dataToSave = sessionStorage.getItem('CSE1');
       const filename = 'storagedata.json';
@@ -132,11 +215,73 @@ export default {
 };
 </script>
 <style scoped>
+#app{
+  overflow: hidden;
+}
+
+.body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 10px;
+  height: 100%;
+  min-width: 1200px;
+  overflow: hidden;
+}
+
+.canvas {
+  border: 1px solid black;
+  width: 75%;
+  height: 80vh;
+  padding: 10px;
+  margin: 10px;
+  background-color: #eee;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rightTab {
+  border: 1px solid black;
+  width: 25%;
+  height: 80vh;
+  padding: 10px;
+  margin: 10px;
+  overflow: hidden;
+  background-color: #eee;
+  border-radius: 5px;
+
+}
+.nav {
+  margin-bottom: 15px;
+  min-width: 1200px;
+  overflow: hidden;
+}
 
 .dragArea {
   border: 1px solid red;
   position: relative;
 
+}
+
+.resourceTree {
+  flex-grow: 1;
+}
+
+.trashcan {
+  height: 10%;
+}
+
+.trashcan .dragArea {
+  height: 100%;
+}
+.trashcan svg{
+  position: relative;
+  left: 49%;
+  bottom: 80%;
+  width: 40px;
+  height: 40px;
 }
 
 .serverName {
@@ -164,6 +309,18 @@ export default {
 .button {
   margin: 0px;
   padding: 10px;
+}
+
+.selectedBox {
+  border: 1px solid black;
+  border-radius: 5px;
+  margin: 5px;
+  padding: 5px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.0;
+  text-align: center;
+  width: 120px;
 }
 
 
