@@ -82,8 +82,13 @@
     ,
     methods: {
       validateMove(evt) {
-        if(evt.relatedContext.element == undefined){
+        if(evt?.to?.parentElement?.className  == 'trashcan'){
+          // console.log("trashcan");
           return true;
+        }
+        if(evt.relatedContext.component.$parent.childRT == undefined){
+          evt.willInsertAfter = false;
+          return false;
         }
         if(evt.relatedContext.component.$parent.childRT.indexOf(evt.draggedContext.element.ty) == -1){
           evt.willInsertAfter = false;

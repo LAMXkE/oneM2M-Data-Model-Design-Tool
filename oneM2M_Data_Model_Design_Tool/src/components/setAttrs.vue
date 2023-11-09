@@ -294,7 +294,6 @@ export default {
         return {
             sE: JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])), 
             isModified: false,
-            loading: true,
         }
         
     },
@@ -310,12 +309,6 @@ export default {
                     if(newValue[key])
                         newValue[key].value = value;
                 });
-                // Object.entries(newValue).forEach(([key, value]) => {
-                //     if(this.element[key])
-                //         value.value = this.element[key];
-                // });
-
-                console.log(newValue);
                 this.sE = newValue;
                 return this.sE;
             }

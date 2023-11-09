@@ -16,7 +16,7 @@
           item-key="id"
           :clickMethod="setAttributes"
           @move="(evt) => { this.isDragging = true; return true; }"
-          @end="(evt) => { this.isDragging = false; return false; }"
+          @drop="(evt) => { this.isDragging = false; return true; }"
           :dragoverBubble="true"
           class="dragArea resourceTree"
           >
@@ -31,6 +31,7 @@
               put: true,
             }"
               :list="[]"
+              name="trashcan"
               class="dragArea"
               item-key="id"
               @change="(evt) => { isDragging = false; return evt;}"
@@ -203,8 +204,6 @@ export default {
       document.body.appendChild(element);
       element.click();
     },
-  },
-  watch: {
     cse1 : {
       deep: true,
       handler(){
