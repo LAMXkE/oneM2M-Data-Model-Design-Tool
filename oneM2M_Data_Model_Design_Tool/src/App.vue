@@ -164,6 +164,10 @@ export default {
     };
 
   },
+  created(){
+    const cse = JSON.parse(sessionStorage.getItem("CSE1"));
+    if (cse!=undefined) this.cse1 = cse;
+  },
   methods: {
     log: function(evt) {
       // window.console.log(evt);
