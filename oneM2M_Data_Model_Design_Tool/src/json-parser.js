@@ -45,11 +45,10 @@ function make_request_resource(currentNode)
 
   const cnt_attribute = ['ty', 'rn', 'lbl', 'acpi', 'at', 'aa', 'cr', 'mni', 'mbs', 'mia'];
   // if cr == true, value is NULL
-  //
-  const ae_attribute = ['ty','rn', 'aei', 'api', 'apn', 'at', 'aa', 'lbl', 'acpi', 'rr', 'poa', 'nl', 'srv'];
+  const ae_attribute = ['ty', 'rn', 'lbl', 'at', 'aa', 'ast', 'acpi', 'api', 'rr', 'srv', 'poa'];
   const acp_attribute = ['ty', 'rn', 'ri', 'pi', 'ct', 'lt', 'lbl', 'acpi', 'et', 'st', 'cr', 'pv', 'pvs'];
-  const grp_attribute = [];
-  const sub_attribute = [];
+  const grp_attribute = ['ty', 'rn', 'lbl', 'macp', 'at', 'aa', 'ast', 'cr', 'csy', 'gn', 'mt', 'macpi'];
+  const sub_attribute = ['ty', 'rn', 'lbl', 'cr', 'acpi', 'enc', 'nu', 'su', 'nec', 'ln', 'nct'];
 
   const resource = {};
 
