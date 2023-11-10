@@ -250,7 +250,7 @@ export default {
   height: 80vh;
   padding: 10px;
   margin: 10px;
-  overflow: hidden;
+  overflow: auto;
   background-color: #eee;
   border-radius: 5px;
 

@@ -1,4 +1,5 @@
 <template>
+    <loadFromRemote :showModal="showModal" emits="showModal"/>
     <div>
 
         <div class="titleBox">
@@ -14,8 +15,8 @@
         </div>
     </div>
     <form @submit="validate" id="attrForm">
-        <div>
-            <div v-for="(content, key) in selectedElement" class="row" :key="key">
+        <div class="attrBox">
+            <div v-for="(content, key) in selectedElement" class="attrRow" :key="key">
                 <div class="col-2 key">{{ key }}</div>
                 <div class="col-10 values">
                     <select :name="key" v-if="content.type == 'Select'" v-model="content.value" @input="isModified=true" class="selectAttr">
@@ -72,6 +73,11 @@
         </div>
     </form>
     <div class="buttonBox">
+        <!-- show modal loadFromRemote.vue when clicked -->
+        <div class="btn" @click="showModal=true" >
+            <p>load</p>
+        </div>
+
         <div class="btn" @click="validate">
             <p>save</p>
         </div>
@@ -80,6 +86,8 @@
 </template>
 
 <script>
+import loadFromRemote from "@/components/loadFromRemote.vue";
+
 const resourceType = {
     Mixed: 0,
     ACP: 1,
@@ -90,18 +98,6 @@ const resourceType = {
     GRP: 9,
     CSR: 16,
 }
-// const RT_CSE = 5;
-// const RT_ACP = 1;
-// const RT_AE = 2;
-// const RT_CNT = 3;
-// const RT_GRP = 9;
-// const RT_SUB = 23;
-// const RT_FCNT = 7;
-// const RT_TS = 8;
-// const RT_TSI = 9;
-// const RT_TSR = 10;
-// const RT_MGMTOBJ = 11;
-// const RT_NODE = 14;
 
 const resourceAttributes = {
     5: {
@@ -289,6 +285,9 @@ const resourceAttributes = {
 };
 
 export default {
+    components:{
+        loadFromRemote
+    },
     props: {
         element: {
             type: Object,
@@ -299,13 +298,13 @@ export default {
         return {
             sE: JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])), 
             isModified: false,
+            showModal: false,
         }
         
     },
     computed: {
         selectedElement: {
             get: function () {
-                console.log('getter', this.sE);
                 return this.sE;
             },
             set: function (newValue) {
@@ -383,7 +382,6 @@ export default {
             }
         },
     }
-    
 }
 
 </script>
@@ -397,7 +395,9 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    padding-bottom: 10px;
+
+    border-bottom: #333 1px solid;
 }
 
 .titleBox p {
@@ -407,26 +407,38 @@ export default {
     padding: 0;
 }
 
+.attrBox {
+    overflow-y: auto;
+    max-height: 500px;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.attrBox .attrRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0px;
+    padding: 5px;
+    border-bottom: #333 1px solid;
+    /* border-top: #333 1px solid; */
+}
+
 .selectAttr {
     width: 100%;
     text-align: left;
-    border-bottom: #333 1px solid;
-    border-top: #333 1px solid;
-    border-radius: 2px;
+    
 }
 
 .key {
     text-align: center;
     font-weight: bold;
-    border-bottom: #333 1px solid;
-    border-top: #333 1px solid;
 }
 
 .values {
     text-align: center;
-    border-bottom: #333 1px solid;
-    border-top: #333 1px solid;
-    border-left: #333 1px solid;
     overflow: auto;
 }
 
@@ -524,8 +536,12 @@ export default {
 .btn {
     background-color: #333;
     color: white;
-    padding: 10px;
     border-radius: 5px;
     cursor: pointer;  
+}
+
+.btn p{
+    padding: 0;
+    margin: 0;
 }
 </style>
