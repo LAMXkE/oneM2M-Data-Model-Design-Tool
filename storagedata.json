@@ -1,0 +1,32 @@
+ [
+  {
+    "name": "CSE1",
+    "ty": 5,
+    "tasks": [
+      {
+        "name": "GRP",
+        "ty": 9,
+        "id": "dde85d73-a78a-44cf-9d26-1b4603fddd50",
+        "tasks": []
+      },
+      {
+        "name": "AE",
+        "ty": 2,
+        "id": "a3b7a29f-c494-4e09-86bb-e7accde8533e",
+        "tasks": []
+      },
+      {
+        "name": "SUB",
+        "ty": 16,
+        "id": "bb6398b5-e3b5-4fdb-a85c-85971d7c6965",
+        "tasks": []
+      },
+      {
+        "name": "CNT",
+        "ty": 3,
+        "id": "b5df376e-23c1-42fc-a448-6cf7785468e9",
+        "tasks": []
+      }
+    ]
+  }
+]
