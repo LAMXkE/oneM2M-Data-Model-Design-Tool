@@ -36,6 +36,9 @@
         <div class="button" style="background-color: aquamarine;" @click="saveResourceTree">
           Save
         </div>
+        <div class="button" style="background-color: lightblue;" @click="loadFile">
+          Load
+        </div>
       </div>
     </div>
 
@@ -73,7 +76,7 @@ export default {
     VueDraggableResizable,
     nestedDraggable,
     // rawDisplayer
-},
+  },
   data() {
     return {
       cse1: [
@@ -120,6 +123,40 @@ export default {
       document.body.appendChild(element);
       element.click();
     },
+    loadFile() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = e.target.result;
+              sessionStorage.setItem('CSE1', data);
+              this.loadFromSessionStorage();
+            } catch (err) {
+              console.error('Invalid JSON file:', err);
+            }
+          };
+          reader.readAsText(file);
+        } else {
+          console.error('Invalid file type. Please upload a JSON file.');
+        }
+      };
+      fileInput.click();
+    },
+    loadFromSessionStorage() {
+      const data = sessionStorage.getItem('CSE1');
+      if (data) {
+        try {
+          const parsedData = JSON.parse(data);
+          this.cse1 = parsedData;
+        } catch (err) {
+          console.error('Invalid JSON data in sessionStorage:', err);
+        }
+      }
+    },
   },
   watch: {
     cse1 : {
@@ -129,7 +166,7 @@ export default {
       }
     }
   }
-};
+}
 </script>
 <style scoped>
 
