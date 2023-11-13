@@ -3,7 +3,6 @@
 //     // 웹에서 전달받은 json파일 파싱 및 resource_create함수에 전달
 // }
 const fs = require('fs'); // Node.js의 파일 시스템 모듈을 불러옵니다.
-
 // 로컬 JSON 파일의 경로 (여기서는 예시 파일 경로입니다. 실제 파일 경로로 변경해야 합니다.)
 const jsonFilePath = "storagedata2.json"//local json file path;
 
@@ -107,10 +106,15 @@ function bfs_json(jsonData) {
     return resource;
   }
 
+async function get_jsonfile(json_data)
+{
+  const jsonObject = json_data//readJSONFile(jsonFilePath);
+  console.log(json)
+  //bfs_json(JSON.stringify(jsonObject, null));
+  resource = bfs_json(jsonObject);
+
+}
 // JSON 데이터 가져오기
-const jsonObject = readJSONFile(jsonFilePath);
-//bfs_json(JSON.stringify(jsonObject, null));
-resource = bfs_json(jsonObject);
 
 // if (jsonObject) {
 //     // JSON 데이터를 그대로 출력
