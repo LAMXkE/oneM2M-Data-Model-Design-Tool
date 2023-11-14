@@ -6,7 +6,6 @@
       :list="tasks"
       :group="this.group"
       :sort="true"
-      @change="log"
       item-key="id"
       :move="validateMove"
     >
@@ -85,6 +84,7 @@
       validateMove(evt) {
         if(evt?.to?.parentElement?.className  == 'trashcan'){
           // console.log("trashcan");
+          evt.willInsertAfter = true;
           return true;
         }
         if(evt.relatedContext.component.$parent.childRT == undefined){
@@ -98,9 +98,6 @@
         
         evt.willInsertAfter = true;
         return true;
-      },
-      log(evt) {
-        // console.log(evt);
       },
       cloneResource(evt) {
         // console.log("cloneResource", evt);
@@ -133,7 +130,6 @@
         }
       },
       getChildRT(parent_ty){
-        // console.log("crt : ", parent_ty, resourceStructure[parent_ty]);
         return resourceStructure[parent_ty];
       },
     }

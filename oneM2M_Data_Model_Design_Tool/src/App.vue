@@ -15,8 +15,7 @@
           :min-height="200"
           item-key="id"
           :clickMethod="setAttributes"
-          @move="(evt) => { this.isDragging = true; return true; }"
-          @drop="(evt) => { this.isDragging = false; return true; }"
+          @move="(evt) => { this.isDragging = true; }"
           :dragoverBubble="true"
           class="dragArea resourceTree"
           >
@@ -27,7 +26,7 @@
             <draggable
             :group="{
               name: 'trashcan',
-              pull: (element) => {console.log(element); return true; },
+              pull: true,
               put: true,
             }"
               :list="[]"
@@ -231,6 +230,7 @@ export default {
     cse1 : {
       deep: true,
       handler(){
+        this.isDragging=false;
       sessionStorage.setItem("CSE1",JSON.stringify(this.cse1, null, 2));
       }
     }
