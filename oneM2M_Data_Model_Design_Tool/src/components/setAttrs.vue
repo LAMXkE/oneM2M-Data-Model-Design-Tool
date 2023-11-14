@@ -1,17 +1,16 @@
 <template>
     <loadFromRemote :showModal="showModal" emits="showModal"/>
     <div>
-
-        <div class="titleBox">
-            <p>Attributes</p>
-            <div class="closeBtn" @click="confirmClose">
-                <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                viewBox="0 0 1436 1054" style="enable-background:new 0 0 1436 1054;" xml:space="preserve">
+    <div class="titleBox">
+        <p>Attributes</p>
+        <div class="closeBtn" @click="confirmClose">
+            <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+            viewBox="0 0 1436 1054" style="enable-background:new 0 0 1436 1054;" xml:space="preserve">
                 <path d="M718.5,453.8l224-224.3c20.4-20.4,53.3-20.4,73.6,0c20.4,20.4,20.4,53.3,0,73.6l-224,224.6l224,224
                 c20.4,20.4,20.4,53.3,0,73.6c-20.4,20.4-53.3,20.4-73.6,0l-224-224l-224.6,224c-20.4,20.4-53.3,20.4-73.6,0
                 c-20.4-20.4-20.4-53.3,0-73.6l224-224L420.4,303.2c-20.5-20.4-20.5-53.3-0.1-73.6s53.3-20.4,73.6,0l224.6,224V453.8z"/>
             </svg>
-            
+        
         </div>
     </div>
     <form @submit="validate" id="attrForm">
@@ -20,36 +19,22 @@
                 <div class="col-2 key">{{ key }}</div>
                 <div class="col-10 values">
                     <select :name="key" v-if="content.type == 'Select'" v-model="content.value" @input="isModified=true" class="selectAttr">
-                        <option v-for="option,key2 in content.options" :key="key2" :value="option">{{ key2 }}</option>
+                        <option v-for="option2,key2 in content.options" :key="key2" :value="key2">{{ option2 }}</option>
                     </select>
                     <select :name="key" v-if="content.type == 'Boolean'" v-model="content.value" class="selectAttr" @input="isModified=true">
                         <option :value="true">true</option>
                         <option :value="false">false</option>
                     </select>
                     <div v-if="content.type=='Array'" class="arrayInput">
-                        <input :name="key" 
-                        :disabled="content.disable" 
-                        autocomplete="off" 
-                        :required="content.required" 
-                        v-model="content.raw_value"
-                        v-on:keyup="(evt) => { addArrayItem(evt, content, content.value); }" 
-                        @input="isModified=true" />
-                        <ul class="Arrayitems">
-                            <li v-for="item2, idx2 in content.value" :key="idx2" class="item">
-                                {{ item2 }}
-                                <button class="arrayDelete" @click="content.value.splice(idx2, 1)">x</button>
-                            </li>
-                        </ul>
-                    </div>
-                    <div v-if="content.type=='Object'" class="objectInput">
-                        <div class="row" v-for="item2, key2, idx2 in content.obj" :key="idx2">
-                            <div class="col-2">
-                                {{ key2 }}
-                            </div>
-                            <div class="col-10">
-                                {{ item2 }}
-                            </div>
-                        </div>
+                        <ArrayInput
+                        :content="content"
+                        @input="(value) => { 
+                            isModified=true;
+                            content.value=value;
+                            }"
+                        >
+
+                        </ArrayInput>
                     </div>
                     <div v-if="content.type=='Checkbox'" class="CheckboxInput">
                         <div v-for="option, idx in content.options" class="Checkbox" :key="idx">
@@ -59,9 +44,13 @@
                             </span>
                         </div>
                     </div>
+                    <div v-if="content.type=='ACR'" class="">
+                        <setAcr></setAcr>
+                    </div>
                     <input v-if="content.type == 'text' || content.type == 'Number'" 
                     :name="key" 
                     :type="content.type" 
+                    :placeholder="content.placeholder"
                     :disabled="content.disable" 
                     v-model="content.value" 
                     :required="content.required"
@@ -74,7 +63,7 @@
     </form>
     <div class="buttonBox">
         <!-- show modal loadFromRemote.vue when clicked -->
-        <div class="btn" @click="showModal=true" >
+        <div class="btn" @click="showModal=true" @loadData="(data) => { this.selectedElement = data; }" >
             <p>load</p>
         </div>
 
@@ -87,7 +76,10 @@
 
 <script>
 import loadFromRemote from "@/components/loadFromRemote.vue";
+import setAcr from "./setAcr.vue";
+import ArrayInput from "./ArrayInput.vue";
 
+import deepClone from 'lodash';
 const resourceType = {
     Mixed: 0,
     ACP: 1,
@@ -101,14 +93,14 @@ const resourceType = {
 
 const resourceAttributes = {
     5: {
-        rn: {type: "text", required:false, disable: false, value: ''}, 
-        lbl: {type: "Array", required:false, disable: false, value: [],  raw_value: ''}, 
-        csi: {type: "text", required:true, disable: false, value: ''}, 
-        cst: {type: "Select", options:{IN: 1, MN: 2, ASN: 3}, required:true, disable: false, value: 1},  
-        cb: {type: "text", required:true, disable: false, value: ''},
+        rn: {type: "text", required:false, disable: false, placeholder:'Resource Name', value: ''}, 
+        lbl: {type: "Array", required:false, disable: false, placeholder:'Label', value: []}, 
+        csi: {type: "text", required:true, disable: false, placeholder:'CSE ID', value: ''}, 
+        cst: {type: "Select", options:{1: 'IN', 2: 'MN', 3: 'ASN'}, required:true, disable: false, value: 1},  
+        cb: {type: "text", required:true, disable: false, placeholder:'CSE Base', value: ''},
         pi: {type: "text", required:false, disable: true, value: ''}, 
         ri: {type: "text", required:false, disable: true, value: ''}, 
-        acpi: {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        acpi: {type: "Array", required:false, disable: false, placeholder:'AccessControlPolicy IDs', value: []},
         ty: {type: "Number",  required:true, disable: true, value: 5},
     },
     1:{
@@ -131,27 +123,12 @@ const resourceAttributes = {
             disable: false, 
             value: false
         },
-        pv: {
-            type: "Object", 
+        'pv ': {
+            type: "ACR", 
             required:false, 
             disable: false, 
             obj: {
-                type: "Object",
-                acr: {
-                    type: "Object", required:false, disable: false, obj: {
-                        acop: {type: "Number", required:false, disable: false, value: 0},
-                        acor: {type: "Array", required:false, disable: false, value: []},
-                        acco: {type: "Object", required:false, disable: false, obj: {
-                                acip:{type: "Object", required:false, disable: false, obj: {
-                                        ipv4: {type: "Array", required:false, disable: false, value: []},
-                                        ipv6: {type: "Array", required:false, disable: false, value: []},
-                                    }
-                                },
-                            }
-                        },
-                    }
-                },
-                
+                type: "Object",                
             }
         },
         'pvs': {
@@ -185,7 +162,7 @@ const resourceAttributes = {
             required:true, 
             disable: false, 
             value: '', 
-            validation: (value) => { if(value[0] != 'N') return false; return true }
+            validation: function(value) { if(value[0] != 'N') return false; return true }
         },
         'api': {
             type: "text", 
@@ -260,10 +237,18 @@ const resourceAttributes = {
     },
     3: {
         'rn': {type: "text", required:false, disable: false, value: ''},
-        'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'at': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'aa': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'lbl': {type: "Array", required:false, disable: false, value: []},
+        'acpi': {type: "Array", required:false, disable: false, value: []},
+        'at': {type: "Array", required:false, disable: false, placeholder:'/CSE1 | http:// | mqtt:// | coap://', value: [],
+                validation: function (value) { 
+                    if(value[0] == '/') return true;
+                    if(value.substring(0, 7) == 'http://') return true;
+                    if(value.substring(0, 7) == 'mqtt://') return true;
+                    if(value.substring(0, 7) == 'coap://') return true;
+                    return false;
+                }
+        },
+        'aa': {type: "Array", required:false, disable: false, value: []},
         'cr': {type: "Boolean", required:false, disable: false, value: false},
         'mni': {type: "Number", required:false, disable: false, value: 0},
         'mbs': {type: "Number", required:false, disable: false, value: 0},
@@ -276,17 +261,32 @@ const resourceAttributes = {
         'ct': {type: "text", required:false, disable: false, value: ''},
         'lt': {type: "text", required:false, disable: false, value: ''},
         'mt': {type: "Select", options:resourceType, required: true, disable:false, value: 0},
-        'csy': {type: "Select", options:{Abandon_Member: 1, Abandon_Group: 2, Set_Mixed: 3}, required: false, disable:false, value: 0},
+        'csy': {type: "Select", options:{1: 'Abandon Member', 2: 'Abandon Group', 3: 'Set Mixed'}, required: false, disable:false, value: 0},
         'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
         'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
         'cr': {type: "Boolean", required:false, disable: false, value: false},
-    }
+    },
+    23: {
+        'rn': {type: "text", required:false, disable: false, value: ''},
+        'ty': {type: "Number", required:true, disable: true, value: 23},
+        'ct': {type: "text", required:false, disable: false, value: ''},
+        'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'nu': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'nct': {type: "Select", options:{1: 'All Attributes', 2: 'Modified Attributes', 3: 'Resource ID', 4: 'Trigger_Payload', 5: 'TimeSeries notification'}, required: true, disable:false, value: 0},
+        'su': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
+        'enc': {type: "Select", options:{None: 0, Base64: 1}, required: true, disable:false, value: 0},
 
+    },
 };
 
 export default {
+    name: "setAttrs",
+    "emits": ["close", "save", "modified"],
     components:{
-        loadFromRemote
+        loadFromRemote,
+        setAcr,
+        ArrayInput
     },
     props: {
         element: {
@@ -296,11 +296,15 @@ export default {
     },
     data() {
         return {
-            sE: JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])), 
+            sE:  deepClone(resourceAttributes[this.element.ty]).__wrapped__, 
             isModified: false,
             showModal: false,
         }
         
+    },
+    beforeMount() {
+        window.addEventListener('beforeunload', () => { this.$emit('close', null); });
+        // this.$emit('close', null);
     },
     computed: {
         selectedElement: {
@@ -337,6 +341,7 @@ export default {
             // console.log(evt);
             evt.preventDefault();
             for (const [key, value] of Object.entries(this.selectedElement)) {
+                console.log(value);
                 if(value.required && value.value === ""){
                     // console.log(key, value.value);
                     alert(key + " is required");
@@ -363,22 +368,6 @@ export default {
                 }
             }else{
                 this.$emit('close', null);
-            }
-        },
-        addArrayItem(evt, content, element){
-            if(evt?.code =='Comma'){
-                console.log(content);
-                var str = evt.target;
-                if(str.value.length < 0 || str.value == ""){
-                    str.value="";
-                    return;
-                }
-                str.value = str.value.replace(/,/g, "");
-                if(str.value == ""){
-                    return;
-                }
-                element.find((item) => item == str.value) ? null : element.push(str.value);
-                content.raw_value = "";
             }
         },
     }
@@ -454,46 +443,6 @@ export default {
     box-sizing: border-box;
 }
 
-.Arrayitems {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap ;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 2px;
-  margin: 0;
-  padding: 0;
-  white-space: inherit;
-}
-
-.arrayInput .divider {
-    flex-basis: 100%;
-}
-.item {
-    background-color: beige;
-    margin: 5px;
-    padding-left: 5px;
-    padding-right: 5px;
-    border: black 1px solid;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-.tag {
-  background: rgb(250, 104, 104);
-  padding: 5px;
-  border-radius: 4px;
-  color: white;
-  white-space: nowrap;
-  transition: 0.1s ease background;
-}
-
-.arrayDelete {
-  color: black;
-  background: none;
-  outline: none;
-  border: none;
-  cursor: pointer;
-}
 .closeBtn {
     cursor: pointer;
     padding: 5px;
