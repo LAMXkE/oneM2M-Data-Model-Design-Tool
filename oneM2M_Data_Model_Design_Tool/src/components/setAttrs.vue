@@ -318,6 +318,10 @@ export default {
             }
         }
     },
+    beforeMount() {
+        window.addEventListener('beforeunload', () => { this.$emit('close', null); });
+        // this.$emit('close', null);
+    },
     watch: {
         element: {
             handler: function (val, oldVal) {
