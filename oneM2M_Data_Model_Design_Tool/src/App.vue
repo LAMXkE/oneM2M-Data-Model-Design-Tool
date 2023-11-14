@@ -34,7 +34,18 @@
               name="trashcan"
               class="dragArea"
               item-key="id"
-              @change="(evt) => { isDragging = false; return evt;}"
+              @change="(evt) => { 
+                // console.log(evt.added);
+                // console.log(this.selectedElement);
+                if(evt.added.element.id==this.selectedElement.id) 
+                {
+                  this.selectedElement = undefined; 
+                  this.attrSetting=false; 
+                  this.attrSettingModified= false;
+                }  
+                isDragging = false; 
+                return evt;
+              }"
               >
               <template #item="item">
                 <div class="">{{ item }}</div>
@@ -73,7 +84,13 @@
         <setAttrs 
         :element="selectedElement" 
         @modified="(status) => { this.attrSettingModified = status; }"
-        @close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
+        @close="() => { 
+          this.attrSetting = false; 
+          if(this.selectedElement)
+            this.selectedElement.selected=false; 
+          this.selectedElement = undefined; 
+          this.attrSettingModified = false;
+        }"
         @save="(newElement, callback) => {
           this.attrSettingModified = false;
           Object.entries(newElement).forEach(([key, value]) => {
@@ -149,12 +166,12 @@ export default {
       ],
       resources: [
         
-          { name: "AE", id: 2, ty: RT_AE },
-          { name: "CNT", id: 3, ty: RT_CNT },
-          { name: "ACP", id: 4, ty: RT_ACP },
-          { name: "GRP", id: 5, ty: RT_GRP },
-          { name: "SUB", id: 6, ty: RT_SUB },
-          { name: "FCNT", id: 7, ty: RT_FCNT },
+          { name: "AE", ty: RT_AE },
+          { name: "CNT", ty: RT_CNT },
+          { name: "ACP", ty: RT_ACP },
+          { name: "GRP", ty: RT_GRP },
+          { name: "SUB", ty: RT_SUB },
+          { name: "FCNT", ty: RT_FCNT },
       ]
       ,
       attrSetting : false,

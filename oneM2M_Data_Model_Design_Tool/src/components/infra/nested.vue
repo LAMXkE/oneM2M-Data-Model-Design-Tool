@@ -50,6 +50,7 @@
     4:[],
     9:[],
     16:[],
+    23:[]
   }
 
   export default {
@@ -104,7 +105,9 @@
       cloneResource(evt) {
         // console.log("cloneResource", evt);
         let newElement = JSON.parse(JSON.stringify(evt));
-        newElement.id = uuidv4();
+        // const uuid = uuidv4();
+        if(newElement.id == undefined)
+          newElement.id = uuidv4();
         newElement.tasks = [];
         newElement.attrs={};
         return newElement;
