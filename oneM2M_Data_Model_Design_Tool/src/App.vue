@@ -67,7 +67,7 @@
         <div class="btn button" style="background-color: aquamarine;" @click="saveResourceTree">
           Save
         </div>
-        <div class="button" style="background-color: lightblue;" @click="loadFile">
+        <div class="btn button" style="background-color: lightblue;" @click="loadFile">
           Load
         </div>
       </div>
@@ -151,13 +151,11 @@ export default {
         }
       ],
       resources: [
-        
           { name: "AE", id: 2, ty: RT_AE },
           { name: "CNT", id: 3, ty: RT_CNT },
           { name: "ACP", id: 4, ty: RT_ACP },
           { name: "GRP", id: 5, ty: RT_GRP },
           { name: "SUB", id: 6, ty: RT_SUB },
-          { name: "FCNT", id: 7, ty: RT_FCNT },
       ]
       ,
       attrSetting : false,
@@ -236,15 +234,31 @@ export default {
       fileInput.click();
     },
     loadFromSessionStorage() {
-      const data = sessionStorage.getItem('CSE1');
+      const data = sessionStorage.getItem('CSE1');   
       if (data) {
         try {
+          
           const parsedData = JSON.parse(data);
+          if (!this.checkData(parsedData[0])) {
+            return;
+          }
           this.cse1 = parsedData;
         } catch (err) {
           console.error('Invalid JSON data in sessionStorage:', err);
         }
       }
+    },
+    checkData(data) {    
+      for (const task of data.tasks) {
+        // Recursively check the tasks of this task by calling this function again
+        // console.log(task);
+        const attribute = task.attrs;
+        
+        if(!this.checkData(task)) {
+          return false;
+        }
+      }
+      return true;
     },
   },
   watch: {
