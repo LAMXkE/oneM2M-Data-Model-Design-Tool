@@ -2,8 +2,9 @@
 // {
 //     // 웹에서 전달받은 json파일 파싱 및 resource_create함수에 전달
 // }
-const fs = require('fs'); // Node.js의 파일 시스템 모듈을 불러옵니다.
+//const fs = require('fs'); // Node.js의 파일 시스템 모듈을 불러옵니다.
 // 로컬 JSON 파일의 경로 (여기서는 예시 파일 경로입니다. 실제 파일 경로로 변경해야 합니다.)
+import fs from 'fs';
 const jsonFilePath = "storagedata2.json"//local json file path;
 
 // JSON 파일을 읽어오는 함수
@@ -19,14 +20,23 @@ function readJSONFile(filePath) {
 
 function attribute_check(resource, currentNode ,attribute_list)
 {
+  //console.log("---------");
+  //console.log(currentNode);
   for (const key of attribute_list) 
   {
     if (currentNode.hasOwnProperty(key)) 
     {
       resource[key] = currentNode[key];
     }
+    if (currentNode["attrs"].hasOwnProperty(key)) 
+    {
+      resource[key] = currentNode["attrs"][key];//JSON.parse(JSON.stringify(currentNode[key]));
+      //console.log(currentNode[key]);
+      //resource[]
+    }
   }
   console.log(resource);
+  //console.log("---------");
   
   // for key:value check
   // const entries = Object.entries(resource);
@@ -52,7 +62,7 @@ function make_request_resource(currentNode)
   const resource = {};
 
   // console.log(currentNode);
-  console.log(currentNode.ty);
+  //console.log("hello im ty", currentNode.ty);
   if (currentNode.ty == 1)
   {
     attribute_check(resource, currentNode, acp_attribute);
@@ -77,21 +87,25 @@ function make_request_resource(currentNode)
 
 
 function bfs_json(jsonData) {
+  console.log(jsonData);
+  let resource;
     const queue = [jsonData];
     // ty 번호순서대로 create요청 보내기 
     while (queue.length > 0) {
       const currentNode = queue.shift();
-  
+      // console.log("current Node is : ", currentNode);
       if (Array.isArray(currentNode)) {
+        // console.log("now isArray");
         // 만약 현재 노드가 배열이면, 배열의 각 요소를 큐에 추가
         for (const item of currentNode) {
           queue.push(item);
         }
       } else if (typeof currentNode === 'object') {
+        // console.log("now object");
         // 만약 현재 노드가 객체이면, "name" 및 "ty" 값을 확인
         if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
           //console.log(currentNode);
-          //console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
+          console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
           resource = make_request_resource(currentNode);
         }
   
@@ -103,17 +117,23 @@ function bfs_json(jsonData) {
         }
       }
     }
-    return resource;
+    //return resource;
   }
 
 async function get_jsonfile(json_data)
 {
   const jsonObject = json_data//readJSONFile(jsonFilePath);
-  console.log(json)
+  //console.log(json_data)
   //bfs_json(JSON.stringify(jsonObject, null));
-  resource = bfs_json(jsonObject);
-
+  bfs_json(jsonObject);
 }
+
+export default get_jsonfile;
+//export default get_jsonfile;
+
+
+
+
 // JSON 데이터 가져오기
 
 // if (jsonObject) {

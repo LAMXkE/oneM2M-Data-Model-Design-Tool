@@ -107,6 +107,7 @@ import VueDraggableResizable  from "vue-draggable-resizable-vue3";
 import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
+import get_jsonfile from "@/components/json-parser.js";
 
 const RT_CSE = 5;
 const RT_ACP = 1;
@@ -166,6 +167,7 @@ export default {
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
+    //get_jsonfile(cse);
     if (cse!=undefined) this.cse1 = cse;
   },
   methods: {
@@ -178,6 +180,12 @@ export default {
     },
     createResourceTree(){
       console.log("createResourceTree");
+      this.create_oneM2M_resource();
+     // console.log("create finish");
+    },
+    makeAttribute()
+    {
+        get_jsonfile();
     },
 
     setAttributes(element){
@@ -199,6 +207,15 @@ export default {
         this.attrSetting = true;
         element.selected = true;
       }
+    },
+    create_oneM2M_resource()
+    {
+      const JSON_string = JSON.stringify(this.cse1);
+      const dataToSave = JSON.parse(JSON_string);
+      const filename = 'storagedata.json';
+      const element = document.createElement('a');
+      get_jsonfile(dataToSave);
+      //console.log("create finish")
     },
     exportTextFile() {
       const dataToSave = sessionStorage.getItem('CSE1');
