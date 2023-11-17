@@ -6,7 +6,6 @@
       :list="tasks"
       :group="this.group"
       :sort="true"
-      @change="log"
       item-key="id"
       :move="validateMove"
     >
@@ -50,6 +49,7 @@
     4:[],
     9:[],
     16:[],
+    23:[]
   }
 
   export default {
@@ -84,6 +84,7 @@
       validateMove(evt) {
         if(evt?.to?.parentElement?.className  == 'trashcan'){
           // console.log("trashcan");
+          evt.willInsertAfter = true;
           return true;
         }
         if(evt.relatedContext.component.$parent.childRT == undefined){
@@ -98,13 +99,12 @@
         evt.willInsertAfter = true;
         return true;
       },
-      log(evt) {
-        // console.log(evt);
-      },
       cloneResource(evt) {
         // console.log("cloneResource", evt);
         let newElement = JSON.parse(JSON.stringify(evt));
-        newElement.id = uuidv4();
+        // const uuid = uuidv4();
+        if(newElement.id == undefined)
+          newElement.id = uuidv4();
         newElement.tasks = [];
         newElement.attrs={};
         return newElement;
@@ -130,7 +130,6 @@
         }
       },
       getChildRT(parent_ty){
-        // console.log("crt : ", parent_ty, resourceStructure[parent_ty]);
         return resourceStructure[parent_ty];
       },
     }
@@ -163,19 +162,19 @@
     width: 120px;
   }
   .resourceBox p{
-    min-height: 50px;
     outline: 1px;
     border-radius: 5px;
     border: 1px solid #ccc;
     background-color: #fff;
     color: #000;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 400;
     line-height: 1.5;
     text-align: center;
-    width: 120px;
-    min-height: 30px;
-    margin: 5px;
+    width: 150px;
+    min-height: 40px;
+    margin: 10px;
+
   }
 
   </style>
