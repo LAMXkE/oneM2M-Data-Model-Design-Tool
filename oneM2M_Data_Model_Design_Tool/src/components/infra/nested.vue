@@ -162,19 +162,19 @@
     width: 120px;
   }
   .resourceBox p{
-    min-height: 50px;
     outline: 1px;
     border-radius: 5px;
     border: 1px solid #ccc;
     background-color: #fff;
     color: #000;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 400;
     line-height: 1.5;
     text-align: center;
-    width: 120px;
-    min-height: 30px;
-    margin: 5px;
+    width: 150px;
+    min-height: 40px;
+    margin: 10px;
+
   }
 
   </style>

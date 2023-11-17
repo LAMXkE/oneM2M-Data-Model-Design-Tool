@@ -34,15 +34,7 @@
               class="dragArea"
               item-key="id"
               @change="(evt) => { 
-                // console.log(evt.added);
-                // console.log(this.selectedElement);
-                if(evt.added.element.id==this.selectedElement.id) 
-                {
-                  this.selectedElement = undefined; 
-                  this.attrSetting=false; 
-                  this.attrSettingModified= false;
-                }  
-                isDragging = false; 
+                this.isDragging = false; 
                 return evt;
               }"
               >
@@ -61,7 +53,7 @@
               </svg>
           </div>
     </div>
-    <div v-if="!attrSetting" class="rightTab">
+    <div class="rightTab">
       <nestedDraggable
         class="dragArea resources list-items"
         :tasks="resources"
@@ -79,7 +71,10 @@
         </div>
       </div>
     </div>
-    <div v-if="attrSetting" class="rightTab">
+    <div v-if="attrSetting" class="modal">
+      <div class="overlay"> 
+      </div>
+      <div class="modalBody">
         <setAttrs 
         :element="selectedElement" 
         @modified="(status) => { this.attrSettingModified = status; }"
@@ -89,28 +84,29 @@
             this.selectedElement.selected=false; 
           this.selectedElement = undefined; 
           this.attrSettingModified = false;
-        }"
+      }"
         @save="(newElement, callback) => {
           this.attrSettingModified = false;
           Object.entries(newElement).forEach(([key, value]) => {
             if(value.value.length == 0)
-              return;
-
-            if(value.value == 0){
-              return;
-            }
-
-            if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
-              this.selectedElement.attrs[key] = parseInt(value.value);
-            }else{
-              this.selectedElement.attrs[key] = value.value;
-            }
-            callback();
-          });
-        }"
+            return;
+          
+          if(value.value == 0){
+            return;
+          }
+          
+          if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
+            this.selectedElement.attrs[key] = parseInt(value.value);
+          }else{
+            this.selectedElement.attrs[key] = value.value;
+          }
+          callback();
+        });
+      }"
         />
+      </div>
     </div>
-
+      
   </div>
   <rawDisplayer class="col-4" :value="cse1" title="List 1" />
 
@@ -119,7 +115,6 @@
 
 <script>
 import draggable from "vuedraggable";
-import VueDraggableResizable  from "vue-draggable-resizable-vue3";
 import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
@@ -145,7 +140,6 @@ export default {
   components: {
     navBar,
     draggable,
-    VueDraggableResizable,
     nestedDraggable,
     setAttrs
     // rawDisplayer
@@ -170,7 +164,7 @@ export default {
           { name: "ACP", ty: RT_ACP },
           { name: "GRP", ty: RT_GRP },
           { name: "SUB", ty: RT_SUB },
-          { name: "FCNT", ty: RT_FCNT },
+          // { name: "FCNT", ty: RT_FCNT },
       ]
       ,
       attrSetting : false,
@@ -197,24 +191,10 @@ export default {
     },
 
     setAttributes(element){
-      if(element == this.selectedElement){
-        return;
-      }
-      if(this.attrSettingModified){
-        if(confirm("Are you sure to switch without saving?")){
-          this.selectedElement.selected = false;
-          this.selectedElement = element;
-          this.attrSettingModified = false;
-          element.selected = true;
-        }
-      }else{
-        if(this.selectedElement)
-          this.selectedElement.selected = false;
-        this.selectedElement = element;
-        this.attrSettingModified = false;
-        this.attrSetting = true;
-        element.selected = true;
-      }
+      this.selectedElement = element;
+      this.attrSettingModified = false;
+      this.attrSetting = true;
+      element.selected = true;
     },
     exportTextFile() {
       const dataToSave = sessionStorage.getItem('CSE1');
@@ -327,6 +307,42 @@ export default {
   width: 100%;
   text-align: center;
   padding: 10px;
+}
+
+.modal {
+  position: fixed;
+  display: block;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+
+}
+
+.modal .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.3);
+}
+
+.modal .modalBody {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+  width: 70vw;
+  height: auto;
+  background-color: #fff;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 15px;
+
 }
 
 .button {

@@ -5,7 +5,8 @@
     :required="content.required" 
     v-model="contents.raw_value"
     :placeholder="content.placeholder"
-    v-on:keyup="(evt) => { addArrayItem(evt, contents, contents.value) }" 
+    @keydown.enter.prevent=""
+    v-on:keyup.prevent="(evt) => { addArrayItem(evt, contents, contents.value) }" 
     @input="isModified=true" />
     <ul class="Arrayitems">
         <li v-for="item2, idx2 in contents.value" :key="idx2" class="item">
@@ -44,8 +45,10 @@ export default {
     },
     methods:{
         addArrayItem(evt){
+            if(evt.code == 'Enter'){
+                return;
+            }
             if(evt?.code =='Comma'){
-                console.log(this.content);
                 var str = evt.target;
                 if(str.value.length < 0 || str.value == ""){
                     str.value="";
@@ -56,7 +59,7 @@ export default {
                     return;
                 }
                 
-                if(!this.content.validation(str.value)){
+                if(this.content.validation != undefined && !this.content.validation(str.value)){
                     console.log("invalid value");
                     alert("invalid value");
                     return;

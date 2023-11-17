@@ -1,8 +1,24 @@
 <template>
-    <loadFromRemote :showModal="showModal" emits="showModal"/>
-    <div>
+<div>
+    <div v-if="modalData.status" class="modal">
+        <div class="overlay"></div>
+        <div v-if="modalData.type == 'ACR'" class="modalBody">
+            <setAcr 
+            :acr_props="modalData.data"
+            @close="() => { modalData.status=false; }"
+            @save="(value) => { 
+                modalData.status=false; 
+                console.log(this.modalData.data);
+                this.modalData.data.value= value;
+                }"
+            />
+        </div>
+        <div v-if="modalData.type == 'LOAD'" class="modalBody">
+            <loadFromRemote />
+        </div>
+    </div>
     <div class="titleBox">
-        <p>Attributes</p>
+        <p>{{ element.name }} Attributes</p>
         <div class="closeBtn" @click="confirmClose">
             <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
             viewBox="0 0 1436 1054" style="enable-background:new 0 0 1436 1054;" xml:space="preserve">
@@ -16,9 +32,15 @@
     <form @submit="validate" id="attrForm">
         <div class="attrBox">
             <div v-for="(content, key) in selectedElement" class="attrRow" :key="key">
-                <div class="col-2 key">{{ key }}</div>
-                <div class="col-10 values">
-                    <select :name="key" v-if="content.type == 'Select'" v-model="content.value" @input="isModified=true" class="selectAttr">
+                <div class="col-3 key">
+                    <p class="fullName">
+                        {{ content.fullName }}
+                        <span class="tooltips">{{ content.description }}</span>
+                    </p>
+
+                </div>
+                <div class="col-9 values">
+                    <select :name="key" v-if="content.type == 'Select'" v-model="content.value" @keydown.enter.prevent="" @input="isModified=true" class="selectAttr">
                         <option v-for="option2,key2 in content.options" :key="key2" :value="key2">{{ option2 }}</option>
                     </select>
                     <select :name="key" v-if="content.type == 'Boolean'" v-model="content.value" class="selectAttr" @input="isModified=true">
@@ -45,7 +67,9 @@
                         </div>
                     </div>
                     <div v-if="content.type=='ACR'" class="">
-                        <setAcr></setAcr>
+                        <div class="btn" @click.stop @click="modalData.type='ACR'; modalData.status=true; modalData.data=content">
+                            <p>set ACR</p>
+                        </div>
                     </div>
                     <input v-if="content.type == 'text' || content.type == 'Number'" 
                     :name="key" 
@@ -56,6 +80,7 @@
                     :required="content.required"
                     autocomplete="off"
                     @input="isModified=true"
+                    @keydown.enter.prevent=""
                     />
                 </div>
             </div>
@@ -63,7 +88,7 @@
     </form>
     <div class="buttonBox">
         <!-- show modal loadFromRemote.vue when clicked -->
-        <div class="btn" @click="showModal=true" @loadData="(data) => { this.selectedElement = data; }" >
+        <div class="btn" @click.stop @click="modalData.type='LOAD'; modalData.status=true" @loadData="(data) => { console.log(data); }" >
             <p>load</p>
         </div>
 
@@ -81,37 +106,121 @@ import ArrayInput from "./ArrayInput.vue";
 
 import deepClone from 'lodash';
 const resourceType = {
-    Mixed: 0,
-    ACP: 1,
-    AE: 2,
-    CNT: 3,
-    CIN: 4,
-    CSE: 5,
-    GRP: 9,
-    CSR: 16,
+    0 : 'Mixed',
+    1: 'ACP',
+    2: 'AE',
+    3: 'CNT',
+    4: 'CIN',
+    5: 'CSE',
+    9: 'GRP',
+    16: 'CSR',
+    23: 'SUB'
 }
 
 const resourceAttributes = {
     5: {
-        rn: {type: "text", required:false, disable: false, placeholder:'Resource Name', value: ''}, 
-        lbl: {type: "Array", required:false, disable: false, placeholder:'Label', value: []}, 
-        csi: {type: "text", required:true, disable: false, placeholder:'CSE ID', value: ''}, 
-        cst: {type: "Select", options:{1: 'IN', 2: 'MN', 3: 'ASN'}, required:true, disable: false, value: 1},  
-        cb: {type: "text", required:true, disable: false, placeholder:'CSE Base', value: ''},
-        pi: {type: "text", required:false, disable: true, value: ''}, 
-        ri: {type: "text", required:false, disable: true, value: ''}, 
-        acpi: {type: "Array", required:false, disable: false, placeholder:'AccessControlPolicy IDs', value: []},
-        ty: {type: "Number",  required:true, disable: true, value: 5},
+        rn: {
+            type: "text", 
+            fullName: "Resource Name",
+            description: "The name of the resource",
+            required:false, 
+            disable: false, 
+            value: ''
+        }, 
+        lbl: {
+            type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource. Seperate with ,(comma)",
+            required:false, 
+            disable: false,
+            value: []
+        }, 
+        csi: {
+            type: "text", 
+            fullName: "CSE ID",
+            description: "The CSE ID of the resource",
+            required:true, 
+            disable: false, 
+            value: ''
+        }, 
+        csz: {
+            type: "Checkbox",
+            fullName: "content Serialization",
+            description: "The content serialization of the resource. At lease one should be selected",
+            options:{0:"application/json", 1: "application/cbor", 2: "application/xml"},
+            required:false,
+            disable: false,
+            value: [],
+            validation: (value) => {
+                if(value.length == 0)
+                    return false;
+                return true;
+            }
+        },
+        poa : {
+            type: "Array",
+            fullName: "Point of Access",
+            description: "The Point of Access of the resource",
+            required:false,
+            disable: false,
+            value: []
+        },
+        srt : {
+            type: "Checkbox",
+            fullName: "Supported Resource Type",
+            description: "The supported resource type of the resource",
+            options: Object.entries(resourceType).filter(([key, value]) => {return key != 0}).map(([key, value]) => {return value}),
+            required:false,
+            disable: false,
+            value: []
+        },
+        cst: {
+            type: "Select", 
+            fullName: "CSE Type",
+            description: "The CSE Type of the resource",
+            options:{1: 'IN', 2: 'MN', 3: 'ASN'}, 
+            required:true, 
+            disable: false, 
+            value: 1
+        },  
+        cb: {
+            type: "text", 
+            fullName: "CSE Base",
+            description: "The CSE Base of the resource",
+            required:true, 
+            disable: false, 
+            value: ''
+        },
+        acpi: {
+            type: "Array", 
+            fullName: "Access Control Policy IDs",
+            description: "Set AccessControlPolicy ID to the resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        ty: {
+            type: "Number", 
+            fullName: "Resource Type",
+            description: "The resource type of the resource",
+            required:true, 
+            disable: true, 
+            value: 5
+        },
     },
     1:{
         'rn': {
             type: "text", 
+            fullName: "Resource Name",
+            description: "The name of the resource",
             required:false, 
             disable: false, 
             value: ''
         },
         'lbl': {
             type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource",
             required:false, 
             disable: false, 
             value: [],
@@ -119,12 +228,16 @@ const resourceAttributes = {
         },
         'cr': {
             type: "Boolean", 
+            fullName: "Creator",
+            description: "Choose whether add creator attribute to the resource",
             required:false, 
             disable: false, 
             value: false
         },
         'pv ': {
             type: "ACR", 
+            fullName: "Privileges",
+            description: "The privilege setting of the resource using this AccessControlPolicy",
             required:false, 
             disable: false, 
             obj: {
@@ -132,7 +245,9 @@ const resourceAttributes = {
             }
         },
         'pvs': {
-            type: "Object", 
+            type: "ACR", 
+            fullName: "Self-Privileges",
+            description: "The privilege setting for this AccessControlPolicy resource",
             required:true, 
             disable: false, 
             obj: {
@@ -145,6 +260,8 @@ const resourceAttributes = {
         },
         'ty': {
             type: "Number", 
+            fullName: "Resource Type",
+            description: "The resource type of the resource",
             required:true, 
             disable: true, 
             value: 1
@@ -153,44 +270,71 @@ const resourceAttributes = {
     2: {
         'rn': {
             type: "text", 
+            fullName: "Resource Name",
+            description: "The name of the resource",
             required:false, 
             disable: false, 
             value: ''
         },
         'aei': {
             type: "text", 
+            fullName: "AE-ID",
+            description: "The AE-ID of the resource",  
             required:true, 
             disable: false, 
-            value: '', 
-            validation: function(value) { if(value[0] != 'N') return false; return true }
+            value: ''
+            
         },
         'api': {
-            type: "text", 
+            type: "text",
+            fullName: "App-ID",
+            description: "The App-ID of the resource",
+            placeholder: 'Should Start with N',
             required:false, 
             disable: false, 
-            value: ''
+            value: '',
+            validation: function(value) { if(value[0] != 'N') return false; return true }
         },
         'apn': {
             type: "text", 
+            fullName: "App-Name",
+            description: "The App-Name of the resource",
             required:false, 
             disable: false, 
             value: ''
         },
         'at': {
-            type: "text", 
-            required:false, 
-            disable: false, 
-            value: ''
-        },
-        'aa': {
             type: "Array", 
+            fullName: "announceTo",
+            description: "Set cse to announce this resource. Can be CSE-ID or URL",
             required:false, 
             disable: false, 
             value: [],
-            raw_value: ''
+            validation: (value) => {
+                if(value[0] == '/') return true;
+                if(value.substring(0, 7) == 'http://') return true;
+                if(value.substring(0, 7) == 'mqtt://') return true;
+                if(value.substring(0, 7) == 'coap://') return true;
+                return false;
+            }
+        },
+        'aa': {
+            type: "Array", 
+            fullName: "Announced Attribute",
+            description: "Attributes to announce",
+            required:false, 
+            disable: false, 
+            value: [],
+            validation: (value) => {
+                console.log(Object.keys(resourceAttributes[resourceType.AE]));
+                if(Object.keys(resourceAttributes[resourceType.AE]).indexOf(value) >= 0) return true;
+                return false;
+            }
         },
         'lbl': {
             type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource",
             required:false, 
             disable: false, 
             value: [],
@@ -198,6 +342,8 @@ const resourceAttributes = {
         },
         'acpi': {
             type: "Array", 
+            fullName: "Access Control Policy IDs",
+            description: "Resource ID or path of ACP resource to control access to this resource",
             required:false, 
             disable: false, 
             value: [],
@@ -205,12 +351,16 @@ const resourceAttributes = {
         },
         'rr': {
             type: "Boolean", 
+            fullName: "Request Reachability",
+            description: "Set whether the resource is reachable or not",
             required:false, 
             disable: false, 
             value: false
         },
         'srv': {
             type: "Checkbox", 
+            fullName: "Supported Release Version",
+            description: "Set supported Release Version",
             options:['1', '2', '2a', '3', '4', '5'], 
             required:true, 
             disable: false, 
@@ -218,53 +368,190 @@ const resourceAttributes = {
         },
         'poa': {
             type: "Array", 
+            fullName: "Point of Access",
+            description: "Set Point of Access",
             required:false, 
             disable: false, 
             value: [],  
             raw_value: ''},
-        'nl': {
-            type: "text", 
-            required:false, 
-            disable: false, 
-            value: ''
-        },
         'ty': {
             type: "Number", 
+            fullName: "Resource Type",
+            description: "The resource type of the resource",
             required:true, 
             disable: true, 
             value: 2
         },
     },
     3: {
-        'rn': {type: "text", required:false, disable: false, value: ''},
-        'lbl': {type: "Array", required:false, disable: false, value: []},
-        'acpi': {type: "Array", required:false, disable: false, value: []},
-        'at': {type: "Array", required:false, disable: false, placeholder:'/CSE1 | http:// | mqtt:// | coap://', value: [],
-                validation: function (value) { 
-                    if(value[0] == '/') return true;
-                    if(value.substring(0, 7) == 'http://') return true;
-                    if(value.substring(0, 7) == 'mqtt://') return true;
-                    if(value.substring(0, 7) == 'coap://') return true;
-                    return false;
-                }
+        'rn': {
+            type: "text", 
+            fullName: "Resource Name",
+            description: "The name of the resource",
+            required:false, 
+            disable: false, 
+            value: ''
         },
-        'aa': {type: "Array", required:false, disable: false, value: []},
-        'cr': {type: "Boolean", required:false, disable: false, value: false},
-        'mni': {type: "Number", required:false, disable: false, value: 0},
-        'mbs': {type: "Number", required:false, disable: false, value: 0},
-        'mia': {type: "Number", required:false, disable: false, value: 0},
-        'ty': {type: "Number", required:true, disable: true, value: 3},
+        'lbl': {
+            type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'acpi': {
+            type: "Array", 
+            fullName: "Access Control Policy IDs",
+            description: "Resource ID or path of ACP resource to control access to this resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'at': {
+            type: "Array", 
+            fullName: "announceTo",
+            description: "Set cse to announce this resource. Can be CSE-ID or URL",
+            required:false, 
+            disable: false, 
+            placeholder:'/CSE1 | http:// | mqtt:// | coap://', 
+            value: [],
+            validation: function (value) { 
+                if(value[0] == '/') return true;
+                if(value.substring(0, 7) == 'http://') return true;
+                if(value.substring(0, 7) == 'mqtt://') return true;
+                if(value.substring(0, 7) == 'coap://') return true;
+                return false;
+            }
+        },
+        'aa': {
+            type: "Array", 
+            fullName: "Announced Attribute",
+            description: "Attributes to announce",
+            required:false,
+            disable: false, 
+            value: [],
+            validation: function (value) { 
+                if(Object.keys(resourceAttributes[resourceType.CNT]).indexOf(value) >= 0) return true;
+                return false;
+            }
+        },
+        'cr': {
+            type: "Boolean", 
+            fullName: "Creator",
+            description: "Choose whether add creator attribute to the resource",
+            required:false, 
+            disable: false, 
+            value: false
+        },
+        'mni': {
+            type: "Number", 
+            fullName: "Max Nr of Instances",
+            description: "The maximum number of instances of the resource",
+            required:false, 
+            disable: false, 
+            value: 0,
+            validation: function (value) { 
+                if(value < 0) return false;
+                return true;
+            }
+        },
+        'mbs': {
+            type: "Number", 
+            fullName: "Max Byte Size",
+            description: "The maximum byte size of the resource",
+            required:false, 
+            disable: false, 
+            value: 0,
+            validation: function (value) { 
+                if(value < 0) return false;
+                return true;
+            }
+        },
+        'mia': {
+            type: "Number", 
+            fullName: "Max Instance Age",
+            description: "The maximum instance age of the resource",
+            required:false, 
+            disable: false, 
+            value: 0,
+            validation: function (value) { 
+                if(value < 0) return false;
+                return true;
+            }
+        },
+        'ty': {
+            type: "Number", 
+            fullName: "Resource Type",
+            description: "The resource type of the resource",
+            required:true, 
+            disable: true, 
+            value: 3
+        },
     },
     9: {
-        'rn': {type: "text", required:false, disable: false, value: ''},
-        'ty': {type: "Number", required:true, disable: true, value: 9},
-        'ct': {type: "text", required:false, disable: false, value: ''},
-        'lt': {type: "text", required:false, disable: false, value: ''},
-        'mt': {type: "Select", options:resourceType, required: true, disable:false, value: 0},
-        'csy': {type: "Select", options:{1: 'Abandon Member', 2: 'Abandon Group', 3: 'Set Mixed'}, required: false, disable:false, value: 0},
-        'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'cr': {type: "Boolean", required:false, disable: false, value: false},
+        'rn': {
+            type: "text", 
+            fullName: "Resource Name",
+            description: "The name of the resource",
+            required:false, 
+            disable: false, 
+            value: ''
+        },
+        'mt': {
+            type: "Select", 
+            fullName: "Member Type",
+            description: "The member type of the resource",
+            options:resourceType, 
+            required: true, 
+            disable:false, 
+            value: 0
+        },
+        'csy': {
+            type: "Select", 
+            fullName: "Consistency Strategy",
+            description: "The consistency strategy of the resource",
+            options: {
+                1: 'Abandon Member', 
+                2: 'Abandon Group', 
+                3: 'Set Mixed'
+            }, 
+            required: false, 
+            disable:false, 
+            value: 0
+        },
+        'lbl': {
+            type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource",
+            required:false, 
+            disable: false, 
+            value: [],
+        },
+        'acpi': {
+            type: "Array", 
+            fullName: "Access Control Policy IDs",
+            description: "Resource ID or path of ACP resource to control access to this resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'cr': {
+            type: "Boolean", 
+            fullName: "Creator",
+            description: "Choose whether add creator attribute to the resource",
+            required:false, 
+            disable: false, 
+            value: false
+        },
+        'ty': {
+            type: "Number", 
+            fullName: "Resource Type",
+            description: "The resource type of the resource",
+            required:true, 
+            disable: true, 
+            value: 9
+        },
     },
     23: {
         'rn': {type: "text", required:false, disable: false, value: ''},
@@ -298,7 +585,11 @@ export default {
         return {
             sE:  deepClone(resourceAttributes[this.element.ty]).__wrapped__, 
             isModified: false,
-            showModal: false,
+            modalData: {
+                status: false,
+                type: '',
+                data: {}
+            }
         }
         
     },
@@ -341,23 +632,21 @@ export default {
             // console.log(evt);
             evt.preventDefault();
             for (const [key, value] of Object.entries(this.selectedElement)) {
-                console.log(value);
                 if(value.required && value.value === ""){
-                    // console.log(key, value.value);
                     alert(key + " is required");
                     return;
                 }
-                // console.log(key, value);
-                // console.log(value.validation);
+
                 if(value.validation){
-                    console.log(value.validation(value.value));
+                    if(value.type === "Array" && value.value.length === 0) continue;
+                    if(value.type === "text" && value.value === "") continue;
+
                     if(!value.validation(value.value)){
                         alert(key + " is not valid");
                         return;
                     }
                 }
             }
-            // console.log(this.selectedElement);
             this.$emit('save', this.selectedElement, ()=>{this.isModified = false;});
             this.isModified = false;
         },
@@ -378,6 +667,42 @@ export default {
 <style scoped>
 .attrSetUi {
     /* overflow-y: auto; */
+}
+
+.modal {
+  position: fixed;
+  display: block;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+
+}
+
+.modal .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.3);
+}
+
+.modal .modalBody {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+  width: 70vw;
+  height: auto;
+  background-color: #fff;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 15px;
+    min-height: 300px;
 }
 
 .titleBox {
@@ -424,6 +749,33 @@ export default {
 .key {
     text-align: center;
     font-weight: bold;
+}
+
+.fullName {
+    position: relative;
+}
+
+.fullName .tooltips {
+    /* display: none; */
+    visibility: hidden;
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    text-wrap: nowrap;
+    top: 100%;
+    left: 50%;
+    margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
+    z-index: 1;
+    border-radius: 4px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.fullName:hover .tooltips{
+    visibility: visible;
+
 }
 
 .values {
