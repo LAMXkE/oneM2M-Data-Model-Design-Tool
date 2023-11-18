@@ -249,11 +249,88 @@ export default {
       }
     },
     checkData(data) {    
-      for (const task of data.tasks) {
-        // Recursively check the tasks of this task by calling this function again
-        // console.log(task);
+      const allowedResourcesMap = { /* childResource */
+        'AE': ['SUB', 'CNT', 'GRP', 'ACP'],
+        'CNT': ['SUB', 'CNT'],
+        'SUB': [],
+        'GRP': ['SUB'],
+      };
+      for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
+        if (Array.isArray(task.tasks)) { 
+          if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
+            alert("Invalid ChildResource(AE)"); 
+            return false;
+          }
+        }
         const attribute = task.attrs;
-        
+        if(task.ty == RT_AE){ /* AE */
+          if(
+            (attribute.api == undefined || attribute.rr == undefined || attribute.srv == undefined) || // Mandatory Attribute
+            (!/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                                // labels
+            (typeof attribute.acpi !== 'string') ||                                                    // accessControlPolicyIDs
+            (typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== 'string' || attribute.aa.includes(':')) ||                        // announcedAttribute
+            (attribute.ast !== 'UNI_DIRECTIONAL' && attribute.ast !== 'BI_DIRECTIONAL') ||             // announceSyncType
+            (typeof attribute.api !== 'string') ||                                                     // App-ID
+            (typeof attribute.rr !== 'boolean') ||                                                     // requestReachability
+            (typeof attribute.poa !== 'string')                                                        // pointOfAccess
+            ){ 
+            alert("Invalid Syntax(AE)");
+            return false;
+          }
+        }
+        if(task.ty == RT_CNT){ /* CNT */
+          if(
+            (!/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                                // labels
+            (typeof attribute.acpi !== 'string') ||                                                    // accessControlPolicyIDs
+            (typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== 'string' || attribute.aa.includes(':')) ||                        // announcedAttribute
+            (attribute.ast !== 1 && attribute.ast !== 2) ||                                            // announceSyncType
+            (typeof attribute.cr !== 'string') ||                                                      // creator
+            (!Number.isInteger(attribute.mni) || attribute.mni < 0) ||                                 // maxNrOfInstances
+            (!Number.isInteger(attribute.mbs) || attribute.mbs < 0) ||                                 // maxByteSize
+            (!Number.isInteger(attribute.mia) || attribute.mia < 0)                                    // maxInstanceAge
+            ){ 
+            alert("Invalid Syntax(CNT)");
+            return false;
+          }
+        }        
+        if(task.ty == RT_SUB){ /* SUB */
+          if(
+            (attribute.nu == undefined) ||
+            (!/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                                // labels
+            (typeof attribute.acpi !== 'string') ||                                                    // accessControlPolicyIDs
+            (typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.nu !== 'string') ||                                                      // notificationURI
+            (typeof attribute.nu !== 'string') ||                                                      // subscriberURI
+            (attribute.ec < 100 || attribute.ec > 199) ||                                              // eventCat
+            (typeof attribute.ln !== 'boolean') ||                                                     // latestNotify
+            (attribute.nct < 1 || attribute.nct > 5)                                                   // notificationContentType
+            ){ 
+            alert("Invalid Syntax(SUB)");
+            return false;
+          }
+        }
+        if(task.ty == RT_GRP){ /* GRP */
+          if(
+            (attribute.mnm == undefined || attribute.mid == undefined) ||                             // Mandatory Attribute
+            (!/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== 'string') ||                                                   // accessControlPolicyIDs
+            (typeof attribute.at !== 'string') ||                                                     // announceTo
+            (typeof attribute.aa !== 'string' || attribute.aa.includes(':')) ||                       // announcedAttribute
+            (attribute.ast !== 1 && attribute.ast !== 2) ||                                           // announceSyncType
+            (typeof attribute.cr !== 'string') ||                                                     // creator
+            (!Number.isInteger(attribute.mnm) || attribute.mnm <= 0) ||                               // maxNrOfMembers
+            (typeof attribute.mid !== 'string') ||                                                    // memberIDs
+            (typeof attribute.macp !== 'string') ||                                                   // memberAccessControlPolicyIDs
+            (attribute.mt < 0 || attribute.mt > 38) ||                                                // memberType
+            (attribute.csy < 1 || attribute.csy > 3) ||                                               // consistencyStrategy
+            (typeof attribute.gn !== 'string')                                                        // groupName 
+            ){ 
+            alert("Invalid Syntax(GRP)");
+            return false;
+          }
+        }
         if(!this.checkData(task)) {
           return false;
         }
