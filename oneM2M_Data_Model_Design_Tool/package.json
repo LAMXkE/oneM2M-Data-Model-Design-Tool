@@ -15,6 +15,7 @@
     "element-plus": "^2.4.1",
     "font-awesome": "^4.7.0",
     "fs": "^0.0.1-security",
+    "mqtt": "^5.3.0",
     "path": "^0.12.7",
     "uuid": "^9.0.1",
     "vue": "^3.3.4",
