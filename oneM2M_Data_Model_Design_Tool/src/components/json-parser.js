@@ -5,7 +5,8 @@
 //const fs = require('fs'); // Node.js의 파일 시스템 모듈을 불러옵니다.
 // 로컬 JSON 파일의 경로 (여기서는 예시 파일 경로입니다. 실제 파일 경로로 변경해야 합니다.)
 import fs from 'fs';
-const jsonFilePath = "storagedata2.json"//local json file path;
+import create_resource from "@/components/http-request.js";
+//const jsonFilePath = "storagedata2.json"//local json file path;
 
 // JSON 파일을 읽어오는 함수
 function readJSONFile(filePath) {
@@ -36,6 +37,8 @@ function attribute_check(resource, currentNode ,attribute_list)
     }
   }
   console.log(resource);
+  create_resource(resource);
+
   //console.log("---------");
   
   // for key:value check
