@@ -1,4 +1,6 @@
 import axios from 'axios';
+import {server_info, resource}  from './config.js';
+
 //import slave from './app.js'
 
 async function select_resource(attr)
@@ -36,20 +38,23 @@ async function select_resource(attr)
     attribute_list = sub_header;
   }
 
-  for (const key of attribute_list)
+  // console.log("att list check");
+  // console.log(attribute_list);
+
+  for (var key in attr)
   {
-    if (attr.hasOwnProperty(key)) 
+    if (attr.hasOwnProperty(key))
     {
-      attr_list["header"][key] = attr[key];
-    }
-    else if (!attr.hasOwnProperty(key)) 
-    {
-      attr_list["body"][key] = attr[key];//JSON.parse(JSON.stringify(currentNode[key]));
-      //console.log(currentNode[key]);
-      //resource[]
+      if (attribute_list.includes(key))
+      {
+        attr_list["header"][key] = attr[key]; 
+      }
+      else{
+        attr_list["body"][key] = attr[key] 
+      }
     }
   }
-
+  console.log("!",attr_list);
   return attr_list;
 }
 
@@ -60,32 +65,36 @@ async function select_resource(attr)
 async function create_resource(attr)
 { 
     console.log("hello im free");
-    const url = "127.0.0.1";
+    const url = server_info["ip"];
 
-    const attrs = select_resource(attr);
+    var attrs = {};
+
+    attrs = await select_resource(attr);
     console.log("------");
-    console.log(attrs);
+    console.log(select_resource(attr));
     console.log("------");
  
-
+  
     const headers = {
         'X-M2M-Origin': "tool_id", //tool에서 설정해야됨
-        'Content-Type': `application/json;ty=${attr["ty"]}`,
+        'Content-Type': `application/json;ty=${attrs["header"]["ty"]}`,
         'Cache-Control': 'no-cache',
     }
 
-    //body_attr = 
+    const body_attr = {
+      "m2m:ae" : attrs["body"]
+    } 
 
-    const body = attr;
+    const body = attrs["body"];
     
     try {
-        const response = await axios.post(url, body, {
+        const response = await axios.post(url, body_attr, {
           headers: headers,
         });
-        console.log(`[AE ${rn} created]`)
+        console.log(`[AE created]`)
         return response.data;
       } catch (error) {
-        console.log(`[AE ${rn} creation failed]`)
+        console.log(`[AE creation failed]`)
         throw error;
       }
 }
