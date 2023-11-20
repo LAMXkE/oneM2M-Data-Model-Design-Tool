@@ -1,8 +1,8 @@
 export const server_info = {
-    url : "rpi.lamxke.xyz",
-    port : 3000,
-    cse_id : "tinyIoT",
-    cse_name : "TinyIoT"
+    url : "sampleurl",
+    port : 1234,
+    cse_id : "cse-id",
+    cse_name : "cse-name"
 }
 
 export const resource = {
