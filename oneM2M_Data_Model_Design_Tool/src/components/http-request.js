@@ -1,7 +1,8 @@
 import axios from 'axios';
 import {server_info, resource}  from './config.js';
-
+//axios.defaults.baseURL = 'hello/';
 //import slave from './app.js'
+axios.defaults.withCredentials = false;
 
 async function select_resource(attr)
 {
@@ -65,8 +66,8 @@ async function select_resource(attr)
 async function create_resource(attr)
 { 
     console.log("hello im free");
-    const url = server_info["ip"];
-
+    const url = `http://${server_info["url"]}`//:${server_info["port"]}`;
+    console.log(url);
     var attrs = {};
 
     attrs = await select_resource(attr);
@@ -78,7 +79,8 @@ async function create_resource(attr)
     const headers = {
         'X-M2M-Origin': "tool_id", //tool에서 설정해야됨
         'Content-Type': `application/json;ty=${attrs["header"]["ty"]}`,
-        'Cache-Control': 'no-cache',
+        // 'Cache-Control': 'no-cache',
+        // 'Access-Control-Allow-Origin' : '*',
     }
 
     const body_attr = {
@@ -90,11 +92,13 @@ async function create_resource(attr)
     try {
         const response = await axios.post(url, body_attr, {
           headers: headers,
+          withCredentials: false,
         });
         console.log(`[AE created]`)
         return response.data;
       } catch (error) {
         console.log(`[AE creation failed]`)
+        //console.log(url);
         throw error;
       }
 }
