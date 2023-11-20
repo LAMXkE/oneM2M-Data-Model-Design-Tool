@@ -183,10 +183,7 @@ export default {
       this.create_oneM2M_resource();
      // console.log("create finish");
     },
-    makeAttribute()
-    {
-        get_jsonfile();
-    },
+    
 
     setAttributes(element){
       if(element == this.selectedElement){
