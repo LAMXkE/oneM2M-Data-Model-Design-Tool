@@ -233,8 +233,31 @@ export default {
       };
       fileInput.click();
     },
+    loadFile() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = e.target.result;
+              sessionStorage.setItem('CSE1', data);
+              this.loadFromSessionStorage();
+            } catch (err) {
+              console.error('Invalid JSON file:', err);
+            }
+          };
+          reader.readAsText(file);
+        } else {
+          console.error('Invalid file type. Please upload a JSON file.');
+        }
+      };
+      fileInput.click();
+    },
     loadFromSessionStorage() {
-      const data = sessionStorage.getItem('CSE1');   
+      const data = sessionStorage.getItem('CSE1');
       if (data) {
         try {
           const parsedData = JSON.parse(data);
@@ -265,12 +288,14 @@ export default {
         if(task.ty == RT_AE){ /* AE */
           if(
             (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || typeof attribute.srv == "undefined") ||             // Mandatory Attribute
+            (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
             (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
             (typeof attribute.ast !== "undefined" && (attribute.ast !== 1 && attribute.ast !== 2)) ||                                         // announceSyncType
-            (typeof attribute.api !== "undefined" && typeof attribute.api !== 'string') ||                                                    // App-ID
+            (typeof attribute.api !== "undefined" && (typeof attribute.api !== 'string' || !attribute.api.startsWith('N'))) ||                // App-ID
+            (typeof attribute.aei !== "undefined" && typeof attribute.aei !== 'string') ||                                                    // AE-ID
             (typeof attribute.rr == "undefined" && typeof attribute.rr !== 'boolean') ||                                                      // requestReachability
             (typeof attribute.poa !== "undefined" && typeof attribute.poa !== 'string')                                                       // pointOfAccess
             ){ 
@@ -279,7 +304,7 @@ export default {
           }
           if (Array.isArray(attribute.srv)) {                                                                                                 // supportedReleaseVersions
             for (let i = 0; i < attribute.srv.length; i++) {
-              if (![1,2,'2a',3,4,5].includes(attribute.srv[i])) {
+              if (!['1','2','2a','3','4','5'].includes(attribute.srv[i])) {
                 alert("Invalid Syntax(AE)");
                 return false;
               }
