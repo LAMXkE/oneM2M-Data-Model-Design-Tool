@@ -233,29 +233,6 @@ export default {
       };
       fileInput.click();
     },
-    loadFile() {
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === 'application/json') {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            try {
-              const data = e.target.result;
-              sessionStorage.setItem('CSE1', data);
-              this.loadFromSessionStorage();
-            } catch (err) {
-              console.error('Invalid JSON file:', err);
-            }
-          };
-          reader.readAsText(file);
-        } else {
-          console.error('Invalid file type. Please upload a JSON file.');
-        }
-      };
-      fileInput.click();
-    },
     loadFromSessionStorage() {
       const data = sessionStorage.getItem('CSE1');
       if (data) {
@@ -277,6 +254,11 @@ export default {
         'SUB': [],
         'GRP': ['SUB'],
       };
+      // const announceSyncType = ['UNI_DIRECTIONAL', 'BI_DIRECTIONAL'];
+      // const notificationEventCat = ['Immediate', 'BestEffort', 'Latest'];
+      // const notificationContentType = ['All_Attributes', 'Modified_Attributes', 'ResourceID', 'Trigger_Payload', 'TimeSeries_notification'];
+      // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
+
       for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
         if (Array.isArray(task.tasks)) { 
           if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
@@ -293,19 +275,19 @@ export default {
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
             (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
-            (typeof attribute.ast !== "undefined" && (attribute.ast !== 1 && attribute.ast !== 2)) ||                                         // announceSyncType
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
             (typeof attribute.api !== "undefined" && (typeof attribute.api !== 'string' || !attribute.api.startsWith('N'))) ||                // App-ID
             (typeof attribute.aei !== "undefined" && typeof attribute.aei !== 'string') ||                                                    // AE-ID
             (typeof attribute.rr == "undefined" && typeof attribute.rr !== 'boolean') ||                                                      // requestReachability
             (typeof attribute.poa !== "undefined" && typeof attribute.poa !== 'string')                                                       // pointOfAccess
             ){ 
-            alert("Invalid Syntax(AE)");
+            alert("Invalid Loading(AE)");
             return false;
           }
           if (Array.isArray(attribute.srv)) {                                                                                                 // supportedReleaseVersions
             for (let i = 0; i < attribute.srv.length; i++) {
               if (!['1','2','2a','3','4','5'].includes(attribute.srv[i])) {
-                alert("Invalid Syntax(AE)");
+                alert("Invalid Loading(AE)");
                 return false;
               }
             }
@@ -317,13 +299,13 @@ export default {
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
             (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
-            (typeof attribute.ast !== "undefined" && attribute.ast !== 1 && attribute.ast !== 2) ||                                           // announceSyncType
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
             (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
             (typeof attribute.mni !== "undefined" && (!Number.isInteger(attribute.mni) || attribute.mni < 0)) ||                              // maxNrOfInstances
             (typeof attribute.mbs !== "undefined" && (!Number.isInteger(attribute.mbs) || attribute.mbs < 0)) ||                              // maxByteSize
             (typeof attribute.mia !== "undefined" && (!Number.isInteger(attribute.mia) || attribute.mia < 0))                                 // maxInstanceAge
             ){ 
-            alert("Invalid Syntax(CNT)");
+            alert("Invalid Loading(CNT)");
             return false;
           }
         }        
@@ -335,11 +317,11 @@ export default {
             (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
             (typeof attribute.nu !== "undefined" && typeof attribute.nu !== 'string') ||                                                      // notificationURI
             (typeof attribute.su !== "undefined" && typeof attribute.su !== 'string') ||                                                      // subscriberURI
-            (typeof attribute.ec !== "undefined" && (attribute.ec < 100 || attribute.ec > 199)) ||                                            // eventCat
+            (typeof attribute.nec !== "undefined" && (attribute.nec < 2 || attribute.nec > 4)) ||                                             // notificationEventCat
             (typeof attribute.ln !== "undefined" && typeof attribute.ln !== 'boolean') ||                                                     // latestNotify
             (typeof attribute.nct !== "undefined" && (attribute.nct < 1 || attribute.nct > 5))                                                // notificationContentType
             ){ 
-            alert("Invalid Syntax(SUB)");
+            alert("Invalid Loading(SUB)");
             return false;
           }
         }
@@ -350,7 +332,7 @@ export default {
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
             (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
-            (typeof attribute.ast !== "undefined" && attribute.ast !== 1 && attribute.ast !== 2) ||                                           // announceSyncType
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
             (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
             (typeof attribute.mnm !== "undefined" && (!Number.isInteger(attribute.mnm) || attribute.mnm <= 0)) ||                             // maxNrOfMembers
             (typeof attribute.mid !== "undefined" && typeof attribute.mid !== 'string') ||                                                    // memberIDs
@@ -358,13 +340,13 @@ export default {
             (typeof attribute.csy !== "undefined" && (attribute.csy < 1 || attribute.csy > 3)) ||                                             // consistencyStrategy
             (typeof attribute.gn !== "undefined" && typeof attribute.gn !== 'string')                                                         // groupName 
             ){ 
-            alert("Invalid Syntax(GRP)");
+            alert("Invalid Loading(GRP)");
             return false;
           }
           if (Array.isArray(attribute.macp)) {                                                                                                // membersAccessControlPolicyIDs
             for (let i = 0; i < attribute.macp.length; i++) {
               if (typeof attribute.macp[i] !== 'string') {
-                alert("Invalid Syntax(GRP)");
+                alert("Invalid Loading(GRP)");
                 return false;
               }
             }
