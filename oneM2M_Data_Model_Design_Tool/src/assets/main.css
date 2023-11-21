@@ -7,6 +7,11 @@
 
   font-weight: normal;
 }
+body
+.modal-open {
+  overflow: hidden;
+  position: fixed;
+}
 
 a,
 .green {
