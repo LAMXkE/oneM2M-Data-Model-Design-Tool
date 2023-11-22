@@ -1,5 +1,8 @@
 <template>
   <div>
+  <button @click="submit">
+    Submit
+  </button><!--
   <button  @click="createConnection">
     Connect
   </button>
@@ -8,7 +11,7 @@
   </button>
   <button @click="doPublish">
     Pub  
-  </button>
+  </button>-->
   </div>
 </template>
 <script>
@@ -39,7 +42,7 @@ export default{
             connectTimeout: 30 * 1000, // ms
             reconnectPeriod: 0, // ms 0(default) is do not reconnect
             clientId:
-            'emqx_vue_' +
+            'sejong_guest' +
             Math.random()
                 .toString(16)
                 .substring(2, 8),
@@ -54,7 +57,7 @@ export default{
         publish: {
             topic: '/oneM2M/req/CSE1/tinyiot/json',
             qos: 0,
-            payload :'{"fr" : "CSE19", "op" : 1, "pc" : {"m2m:ae" : {"rn": "test2","api": "Rae002","rr":true, "srv": ["2a", "3"]}},"rqi" : "m_createAE003","to" : "TinyIoT", "ty" : 2}'
+            payload :'{"fr" : "CSE1", "op" : 1, "pc" : {"m2m:ae" : {"rn": "test2","api": "Rae002","rr":true, "srv": ["2a", "3"]}},"rqi" : "m_createAE003","to" : "TinyIoT", "ty" : 2}'
         },
         receiveNews: '',
         qosList: [0, 1, 2],
@@ -68,6 +71,23 @@ export default{
       }
     },
     methods: {
+        submit() {
+            this.resource_req_que = bfs_json(this.cse1)
+            this.createConnection(); //통신 연결
+            
+            this.resource_req_que.forEach((resource) => {
+              console.log(resource);
+              this.resource_sub_pub_init(resource);
+              // 각 resource에 대한 작업 실행
+              this.doSubscribe(); //현재 resource에 대한 요청의 response데이터를 확인하기 위해 구독
+              this.doPublish(); //현재 resource에 대한 요청 
+            });
+        },
+        resource_sub_pub_init(resource){
+            /* sub init */ 
+            
+            /* pub init */ 
+        },
         initData() {
             this.client = {
             connected: false,
@@ -90,8 +110,6 @@ export default{
           },
         createConnection() {
             try {
-              this.resource_req_que = bfs_json(this.cse1);
-              console.log(this.resource_req_que)
               this.connecting = true
               const { protocol, host, port, endpoint, ...options } = this.connection
               const connectUrl = `${protocol}://${host}:${port}${endpoint}`
