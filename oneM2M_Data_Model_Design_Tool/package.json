@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@he-tree/vue": "^2.7.0",
+    "axios": "^1.6.2",
     "bootstrap": "^5.3.2",
     "element-plus": "^2.4.1",
     "font-awesome": "^4.7.0",
     "fs": "^0.0.1-security",
     "mqtt": "^5.3.0",
+    "lodash": "^4.17.21",
     "path": "^0.12.7",
     "uuid": "^9.0.1",
     "vue": "^3.3.4",

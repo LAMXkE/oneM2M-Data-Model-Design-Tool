@@ -15,8 +15,7 @@
           :min-height="200"
           item-key="id"
           :clickMethod="setAttributes"
-          @move="(evt) => { this.isDragging = true; return true; }"
-          @drop="(evt) => { this.isDragging = false; return true; }"
+          @move="(evt) => { this.isDragging = true; }"
           :dragoverBubble="true"
           class="dragArea resourceTree"
           >
@@ -27,14 +26,17 @@
             <draggable
             :group="{
               name: 'trashcan',
-              pull: (element) => {console.log(element); return true; },
+              pull: true,
               put: true,
             }"
               :list="[]"
               name="trashcan"
               class="dragArea"
               item-key="id"
-              @change="(evt) => { isDragging = false; return evt;}"
+              @change="(evt) => { 
+                this.isDragging = false; 
+                return evt;
+              }"
               >
               <template #item="item">
                 <div class="">{{ item }}</div>
@@ -51,7 +53,7 @@
               </svg>
           </div>
     </div>
-    <div v-if="!attrSetting" class="rightTab">
+    <div class="rightTab">
       <nestedDraggable
         class="dragArea resources list-items"
         :tasks="resources"
@@ -67,7 +69,7 @@
         <div class="btn button" style="background-color: aquamarine;" @click="saveResourceTree">
           Save
         </div>
-        <div class="button" style="background-color: lightblue;" @click="loadFile">
+        <div class="btn button" style="background-color: lightblue;" @click="loadFile">
           Load
         </div>
         <div class="btn button" style="background-color: red;" @click="createConnection">
@@ -81,32 +83,42 @@
         </div>
       </div>
     </div>
-    <div v-if="attrSetting" class="rightTab">
+    <div v-if="attrSetting" class="modal">
+      <div class="overlay"> 
+      </div>
+      <div class="modalBody">
         <setAttrs 
         :element="selectedElement" 
         @modified="(status) => { this.attrSettingModified = status; }"
-        @close="() => { this.attrSetting = false; this.selectedElement.selected=false; this.selectedElement = undefined; this.attrSettingModified = false;}"
+        @close="() => { 
+          this.attrSetting = false; 
+          if(this.selectedElement)
+            this.selectedElement.selected=false; 
+          this.selectedElement = undefined; 
+          this.attrSettingModified = false;
+      }"
         @save="(newElement, callback) => {
           this.attrSettingModified = false;
           Object.entries(newElement).forEach(([key, value]) => {
             if(value.value.length == 0)
-              return;
-
-            if(value.value == 0){
-              return;
-            }
-
-            if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
-              this.selectedElement.attrs[key] = parseInt(value.value);
-            }else{
-              this.selectedElement.attrs[key] = value.value;
-            }
-            callback();
-          });
-        }"
+            return;
+          
+          if(value.value == 0){
+            return;
+          }
+          
+          if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
+            this.selectedElement.attrs[key] = parseInt(value.value);
+          }else{
+            this.selectedElement.attrs[key] = value.value;
+          }
+          callback();
+        });
+      }"
         />
+      </div>
     </div>
-
+      
   </div>
   <rawDisplayer class="col-4" :value="cse1" title="List 1" />
 
@@ -115,11 +127,11 @@
 
 <script>
 import draggable from "vuedraggable";
-import VueDraggableResizable  from "vue-draggable-resizable-vue3";
 import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
 import mqtt from 'mqtt';
+import get_jsonfile from "@/components/json-parser.js";
 
 const RT_CSE = 5;
 const RT_ACP = 1;
@@ -142,7 +154,6 @@ export default {
   components: {
     navBar,
     draggable,
-    VueDraggableResizable,
     nestedDraggable,
     setAttrs
     // rawDisplayer
@@ -161,13 +172,12 @@ export default {
         }
       ],
       resources: [
-        
-          { name: "AE", id: 2, ty: RT_AE },
-          { name: "CNT", id: 3, ty: RT_CNT },
-          { name: "ACP", id: 4, ty: RT_ACP },
-          { name: "GRP", id: 5, ty: RT_GRP },
-          { name: "SUB", id: 6, ty: RT_SUB },
-          { name: "FCNT", id: 7, ty: RT_FCNT },
+          { name: "AE", ty: RT_AE },
+          { name: "CNT", ty: RT_CNT },
+          { name: "ACP", ty: RT_ACP },
+          { name: "GRP", ty: RT_GRP },
+          { name: "SUB", ty: RT_SUB },
+          // { name: "FCNT", ty: RT_FCNT },
       ]
       ,
       attrSetting : false,
@@ -230,6 +240,7 @@ export default {
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
+    //get_jsonfile(cse);
     if (cse!=undefined) this.cse1 = cse;
   },
   methods: {
@@ -242,28 +253,26 @@ export default {
     },
     createResourceTree(){
       console.log("createResourceTree");
+      this.create_oneM2M_resource();
+     // console.log("create finish");
       this.submit();
     },
+    
 
     setAttributes(element){
-      if(element == this.selectedElement){
-        return;
-      }
-      if(this.attrSettingModified){
-        if(confirm("Are you sure to switch without saving?")){
-          this.selectedElement.selected = false;
-          this.selectedElement = element;
-          this.attrSettingModified = false;
-          element.selected = true;
-        }
-      }else{
-        if(this.selectedElement)
-          this.selectedElement.selected = false;
-        this.selectedElement = element;
-        this.attrSettingModified = false;
-        this.attrSetting = true;
-        element.selected = true;
-      }
+      this.selectedElement = element;
+      this.attrSettingModified = false;
+      this.attrSetting = true;
+      element.selected = true;
+    },
+    create_oneM2M_resource()
+    {
+      const JSON_string = JSON.stringify(this.cse1);
+      const dataToSave = JSON.parse(JSON_string);
+      const filename = 'storagedata.json';
+      const element = document.createElement('a');
+      get_jsonfile(dataToSave);
+      //console.log("create finish")
     },
     exportTextFile() {
       const dataToSave = sessionStorage.getItem('CSE1');
@@ -302,11 +311,125 @@ export default {
       if (data) {
         try {
           const parsedData = JSON.parse(data);
+          if (!this.checkData(parsedData[0])) {
+            return;
+          }
           this.cse1 = parsedData;
         } catch (err) {
           console.error('Invalid JSON data in sessionStorage:', err);
         }
       }
+    },
+    checkData(data) {    
+      const allowedResourcesMap = { /* childResource */
+        'AE': ['SUB', 'CNT', 'GRP', 'ACP'],
+        'CNT': ['SUB', 'CNT'],
+        'SUB': [],
+        'GRP': ['SUB'],
+      };
+      // const announceSyncType = ['UNI_DIRECTIONAL', 'BI_DIRECTIONAL'];
+      // const notificationEventCat = ['Immediate', 'BestEffort', 'Latest'];
+      // const notificationContentType = ['All_Attributes', 'Modified_Attributes', 'ResourceID', 'Trigger_Payload', 'TimeSeries_notification'];
+      // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
+
+      for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
+        if (Array.isArray(task.tasks)) { 
+          if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
+            alert("Invalid ChildResource(AE)"); 
+            return false;
+          }
+        }
+        const attribute = task.attrs;
+        if(task.ty == RT_AE){ /* AE */
+          if(
+            (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || typeof attribute.srv == "undefined") ||             // Mandatory Attribute
+            (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
+            (typeof attribute.api !== "undefined" && (typeof attribute.api !== 'string' || !attribute.api.startsWith('N'))) ||                // App-ID
+            (typeof attribute.aei !== "undefined" && typeof attribute.aei !== 'string') ||                                                    // AE-ID
+            (typeof attribute.rr == "undefined" && typeof attribute.rr !== 'boolean') ||                                                      // requestReachability
+            (typeof attribute.poa !== "undefined" && typeof attribute.poa !== 'string')                                                       // pointOfAccess
+            ){ 
+            alert("Invalid Loading(AE)");
+            return false;
+          }
+          if (Array.isArray(attribute.srv)) {                                                                                                 // supportedReleaseVersions
+            for (let i = 0; i < attribute.srv.length; i++) {
+              if (!['1','2','2a','3','4','5'].includes(attribute.srv[i])) {
+                alert("Invalid Loading(AE)");
+                return false;
+              }
+            }
+          }
+        }
+        if(task.ty == RT_CNT){ /* CNT */
+          if(
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.mni !== "undefined" && (!Number.isInteger(attribute.mni) || attribute.mni < 0)) ||                              // maxNrOfInstances
+            (typeof attribute.mbs !== "undefined" && (!Number.isInteger(attribute.mbs) || attribute.mbs < 0)) ||                              // maxByteSize
+            (typeof attribute.mia !== "undefined" && (!Number.isInteger(attribute.mia) || attribute.mia < 0))                                 // maxInstanceAge
+            ){ 
+            alert("Invalid Loading(CNT)");
+            return false;
+          }
+        }        
+        if(task.ty == RT_SUB){ /* SUB */
+          if(
+            (typeof attribute.nu == "undefined") ||                                                                                           // Mandatory Attribute
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.nu !== "undefined" && typeof attribute.nu !== 'string') ||                                                      // notificationURI
+            (typeof attribute.su !== "undefined" && typeof attribute.su !== 'string') ||                                                      // subscriberURI
+            (typeof attribute.nec !== "undefined" && (attribute.nec < 2 || attribute.nec > 4)) ||                                             // notificationEventCat
+            (typeof attribute.ln !== "undefined" && typeof attribute.ln !== 'boolean') ||                                                     // latestNotify
+            (typeof attribute.nct !== "undefined" && (attribute.nct < 1 || attribute.nct > 5))                                                // notificationContentType
+            ){ 
+            alert("Invalid Loading(SUB)");
+            return false;
+          }
+        }
+        if(task.ty == RT_GRP){ /* GRP */
+          if(
+            (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined") ||                                                   // Mandatory Attribute
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.mnm !== "undefined" && (!Number.isInteger(attribute.mnm) || attribute.mnm <= 0)) ||                             // maxNrOfMembers
+            (typeof attribute.mid !== "undefined" && typeof attribute.mid !== 'string') ||                                                    // memberIDs
+            (typeof attribute.mt !== "undefined" && (attribute.mt < 0 || attribute.mt > 38)) ||                                               // memberType
+            (typeof attribute.csy !== "undefined" && (attribute.csy < 1 || attribute.csy > 3)) ||                                             // consistencyStrategy
+            (typeof attribute.gn !== "undefined" && typeof attribute.gn !== 'string')                                                         // groupName 
+            ){ 
+            alert("Invalid Loading(GRP)");
+            return false;
+          }
+          if (Array.isArray(attribute.macp)) {                                                                                                // membersAccessControlPolicyIDs
+            for (let i = 0; i < attribute.macp.length; i++) {
+              if (typeof attribute.macp[i] !== 'string') {
+                alert("Invalid Loading(GRP)");
+                return false;
+              }
+            }
+          }
+        }
+        if(!this.checkData(task)) {
+          return false;
+        }
+      }
+      return true;
     },
     submit(){
       this.createConnection();
@@ -414,6 +537,7 @@ export default {
     cse1 : {
       deep: true,
       handler(){
+        this.isDragging=false;
       sessionStorage.setItem("CSE1",JSON.stringify(this.cse1, null, 2));
       }
     }
@@ -454,7 +578,7 @@ export default {
   height: 80vh;
   padding: 10px;
   margin: 10px;
-  overflow: hidden;
+  overflow: auto;
   background-color: #eee;
   border-radius: 5px;
 
@@ -510,6 +634,42 @@ export default {
   width: 100%;
   text-align: center;
   padding: 10px;
+}
+
+.modal {
+  position: fixed;
+  display: block;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+
+}
+
+.modal .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.3);
+}
+
+.modal .modalBody {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 101;
+  width: 70vw;
+  height: auto;
+  background-color: #fff;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding: 15px;
+
 }
 
 .button {
