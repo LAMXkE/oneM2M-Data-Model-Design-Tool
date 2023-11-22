@@ -14,7 +14,8 @@
 <script>
 
 import mqtt from 'mqtt'
-import {resource, get_jsonfile,
+//import {resource, get_jsonfile,
+import {get_jsonfile,
   bfs_json,
   make_request_resource,
   attribute_check,
@@ -63,7 +64,7 @@ export default{
         subscribeSuccess: false,
         connecting: false,
         retryTimes: 0,
-        resou: resource
+        resource_req_que: []
       }
     },
     methods: {
@@ -89,8 +90,8 @@ export default{
           },
         createConnection() {
             try {
-              bfs_json(this.cse1)
-              //console.log(JSON.stringify(this.resource))
+              this.resource_req_que = bfs_json(this.cse1);
+              console.log(this.resource_req_que)
               this.connecting = true
               const { protocol, host, port, endpoint, ...options } = this.connection
               const connectUrl = `${protocol}://${host}:${port}${endpoint}`

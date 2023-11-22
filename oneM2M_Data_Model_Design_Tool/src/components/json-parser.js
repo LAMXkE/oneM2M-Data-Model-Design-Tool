@@ -8,30 +8,8 @@
 import create_resource from "@/components/http-request.js";
 //const jsonFilePath = "./storagedata.json"//local json file path;
 
-export var resource =
-    {/*
-      name: "CSE1",
-      ty: 5,
-      tasks: [
-        {
-          name: "AE",
-          ty: 2,
-          id: "3a659da3-8bef-4461-bf2a-cb5024fb1e4e",
-          tasks: [
-            {
-              name: "CNT",
-              ty: 3,
-              id: "51ef8a27-254b-445e-96b0-8ddc98b89bb4",
-              tasks: [],
-              attrs: {}
-            }
-          ],
-          attrs: {}
-        }
-      ],
-      attrs: {}
-      */
-    }
+// export let resource = {};
+
 // JSON 파일을 읽어오는 함수
 //function readJSONFile(filePath)
 export function readJSONFile() {
@@ -74,7 +52,7 @@ export function attribute_check(resource, currentNode ,attribute_list)
   //   console.log(key + ": " + value);
   // }
 
-  //return resource;
+  // return resource;
 }
 
 export function make_request_resource(currentNode)
@@ -88,6 +66,8 @@ export function make_request_resource(currentNode)
   const acp_attribute = ['ty', 'rn', 'ri', 'pi', 'ct', 'lt', 'lbl', 'acpi', 'et', 'st', 'cr', 'pv', 'pvs'];
   const grp_attribute = ['ty', 'rn', 'lbl', 'macp', 'at', 'aa', 'ast', 'cr', 'csy', 'gn', 'mt', 'macpi'];
   const sub_attribute = ['ty', 'rn', 'lbl', 'cr', 'acpi', 'enc', 'nu', 'su', 'nec', 'ln', 'nct'];
+
+  const resource = {};
 
   // console.log(currentNode);
   //console.log("hello im ty", currentNode.ty);
@@ -111,11 +91,14 @@ export function make_request_resource(currentNode)
   {
     attribute_check(resource, currentNode, sub_attribute);
   }
+  return resource
 }
 
 
 export function bfs_json(jsonData) {
   //console.log(jsonData);
+  // let resource;
+  let resource_req_que = []; 
     const queue = [jsonData];
     // ty 번호순서대로 create요청 보내기 
     while (queue.length > 0) {
@@ -131,9 +114,11 @@ export function bfs_json(jsonData) {
         // console.log("now object");
         // 만약 현재 노드가 객체이면, "name" 및 "ty" 값을 확인
         if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
-        console.log(currentNode);
-        console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
-          resource = make_request_resource(currentNode);
+        // console.log(currentNode);
+        // console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
+        // resource = make_request_resource(currentNode);
+         resource_req_que.push(make_request_resource(currentNode));
+        // console.log(resource)
         }
   
         // 객체의 하위 항목을 큐에 추가
@@ -144,7 +129,7 @@ export function bfs_json(jsonData) {
         }
       }
     }
-    return resource;
+    return resource_req_que;
   }
 
 
@@ -160,7 +145,7 @@ export function get_jsonfile()
 
 
 export default {
-  resource,
+  //resource,
   get_jsonfile,
   bfs_json,
   make_request_resource,
