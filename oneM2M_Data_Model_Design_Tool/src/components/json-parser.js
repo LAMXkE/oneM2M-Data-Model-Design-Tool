@@ -4,14 +4,41 @@
 // }
 //const fs = require('fs'); // Node.js의 파일 시스템 모듈을 불러옵니다.
 // 로컬 JSON 파일의 경로 (여기서는 예시 파일 경로입니다. 실제 파일 경로로 변경해야 합니다.)
-import fs from 'fs';
+// import fs from 'fs';
 import create_resource from "@/components/http-request.js";
-//const jsonFilePath = "storagedata2.json"//local json file path;
+//const jsonFilePath = "./storagedata.json"//local json file path;
 
+export var resource =
+    {/*
+      name: "CSE1",
+      ty: 5,
+      tasks: [
+        {
+          name: "AE",
+          ty: 2,
+          id: "3a659da3-8bef-4461-bf2a-cb5024fb1e4e",
+          tasks: [
+            {
+              name: "CNT",
+              ty: 3,
+              id: "51ef8a27-254b-445e-96b0-8ddc98b89bb4",
+              tasks: [],
+              attrs: {}
+            }
+          ],
+          attrs: {}
+        }
+      ],
+      attrs: {}
+      */
+    }
 // JSON 파일을 읽어오는 함수
-function readJSONFile(filePath) {
+//function readJSONFile(filePath)
+export function readJSONFile() {
     try {
-        const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        console.log('파일읽는중')
+        //const jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        var jsonData = resource;
         return jsonData;
     } catch (error) {
         console.error('Unable to Read JSON file : ', error);
@@ -19,7 +46,7 @@ function readJSONFile(filePath) {
     }
 }
 
-function attribute_check(resource, currentNode ,attribute_list)
+export function attribute_check(resource, currentNode ,attribute_list)
 {
   //console.log("---------");
   //console.log(currentNode);
@@ -36,8 +63,8 @@ function attribute_check(resource, currentNode ,attribute_list)
       //resource[]
     }
   }
-  console.log(resource);
-  create_resource(resource);
+  //console.log(resource);
+  //create_resource(resource);
 
   //console.log("---------");
   
@@ -50,7 +77,7 @@ function attribute_check(resource, currentNode ,attribute_list)
   //return resource;
 }
 
-function make_request_resource(currentNode)
+export function make_request_resource(currentNode)
 {
   //ty, rn + resource 형성, http-request에 데이터 전송
   //ty에 따라서 호출해야하는 함수가 다름.. 
@@ -61,8 +88,6 @@ function make_request_resource(currentNode)
   const acp_attribute = ['ty', 'rn', 'ri', 'pi', 'ct', 'lt', 'lbl', 'acpi', 'et', 'st', 'cr', 'pv', 'pvs'];
   const grp_attribute = ['ty', 'rn', 'lbl', 'macp', 'at', 'aa', 'ast', 'cr', 'csy', 'gn', 'mt', 'macpi'];
   const sub_attribute = ['ty', 'rn', 'lbl', 'cr', 'acpi', 'enc', 'nu', 'su', 'nec', 'ln', 'nct'];
-
-  const resource = {};
 
   // console.log(currentNode);
   //console.log("hello im ty", currentNode.ty);
@@ -89,9 +114,8 @@ function make_request_resource(currentNode)
 }
 
 
-function bfs_json(jsonData) {
-  console.log(jsonData);
-  let resource;
+export function bfs_json(jsonData) {
+  //console.log(jsonData);
     const queue = [jsonData];
     // ty 번호순서대로 create요청 보내기 
     while (queue.length > 0) {
@@ -107,8 +131,8 @@ function bfs_json(jsonData) {
         // console.log("now object");
         // 만약 현재 노드가 객체이면, "name" 및 "ty" 값을 확인
         if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
-          //console.log(currentNode);
-          console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
+        console.log(currentNode);
+        console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
           resource = make_request_resource(currentNode);
         }
   
@@ -120,22 +144,29 @@ function bfs_json(jsonData) {
         }
       }
     }
-    //return resource;
+    return resource;
   }
 
-async function get_jsonfile(json_data)
+
+//async function get_jsonfile(json_data)
+export function get_jsonfile()
 {
-  const jsonObject = json_data//readJSONFile(jsonFilePath);
+  const jsonObject = readJSONFile();
+  //console.log(jsonObject)
   //console.log(json_data)
   //bfs_json(JSON.stringify(jsonObject, null));
   bfs_json(jsonObject);
 }
 
-export default get_jsonfile;
-//export default get_jsonfile;
 
-
-
+export default {
+  resource,
+  get_jsonfile,
+  bfs_json,
+  make_request_resource,
+  attribute_check,
+  readJSONFile,
+}
 
 // JSON 데이터 가져오기
 

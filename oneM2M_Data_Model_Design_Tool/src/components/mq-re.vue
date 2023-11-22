@@ -7,16 +7,24 @@
     Sub
   </button>
   <button @click="doPublish">
-    Pub
-  </button></div>
+    Pub  
+  </button>
+  </div>
 </template>
 <script>
 
 import mqtt from 'mqtt'
+import {resource, get_jsonfile,
+  bfs_json,
+  make_request_resource,
+  attribute_check,
+  readJSONFile } from './json-parser.js'
 
 export default{
     name: "mq_re",
-    
+    props: {
+      cse1: Object
+    },
     data(){
      return{
         connection: {
@@ -28,7 +36,7 @@ export default{
             // for more options, please refer to https://github.com/mqttjs/MQTT.js#mqttclientstreambuilder-options
             clean: true,
             connectTimeout: 30 * 1000, // ms
-            reconnectPeriod: 0, // ms
+            reconnectPeriod: 0, // ms 0(default) is do not reconnect
             clientId:
             'emqx_vue_' +
             Math.random()
@@ -39,11 +47,11 @@ export default{
             password:'',
         },
         subscription: {
-            topic: '/oneM2M/resp/CSE19/+/#',
+            topic: '/oneM2M/resp/CSE1/+/#', //
             qos: 0,
         },
         publish: {
-            topic: '/oneM2M/req/CSE19/tinyiot/json',
+            topic: '/oneM2M/req/CSE1/tinyiot/json',
             qos: 0,
             payload :'{"fr" : "CSE19", "op" : 1, "pc" : {"m2m:ae" : {"rn": "test2","api": "Rae002","rr":true, "srv": ["2a", "3"]}},"rqi" : "m_createAE003","to" : "TinyIoT", "ty" : 2}'
         },
@@ -55,6 +63,7 @@ export default{
         subscribeSuccess: false,
         connecting: false,
         retryTimes: 0,
+        resou: resource
       }
     },
     methods: {
@@ -80,6 +89,8 @@ export default{
           },
         createConnection() {
             try {
+              bfs_json(this.cse1)
+              //console.log(JSON.stringify(this.resource))
               this.connecting = true
               const { protocol, host, port, endpoint, ...options } = this.connection
               const connectUrl = `${protocol}://${host}:${port}${endpoint}`
