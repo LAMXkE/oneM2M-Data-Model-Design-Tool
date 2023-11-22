@@ -344,7 +344,7 @@ export default {
             this.connecting = false
             console.log('Connection succeeded!')
           })
-          //this.client.on('reconnect', this.handleOnReConnect)
+          this.client.on('reconnect', this.handleOnReConnect)
           this.client.on('error', error => {
             console.log('Connection failed', error)
           })
