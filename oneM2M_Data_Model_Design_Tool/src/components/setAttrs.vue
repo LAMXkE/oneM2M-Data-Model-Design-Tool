@@ -4,12 +4,10 @@
         <div class="overlay"></div>
         <div v-if="modalData.type == 'ACR'" class="modalBody">
             <setAcr 
-            :acr_props="modalData.data"
-            @close="() => { modalData.status=false; }"
-            @save="(value) => { 
-                modalData.status=false; 
-                console.log(this.modalData.data);
-                this.modalData.data.value= value;
+            :acr_props="modalData.data.value"
+            @close="() => { modalData.status=false; modalData.data=undefined; modalData.type=''; }"
+            @save="(value) => {  
+                modalData.data.value = value;
                 }"
             />
         </div>
@@ -67,7 +65,7 @@
                         </div>
                     </div>
                     <div v-if="content.type=='ACR'" class="">
-                        <div class="btn" @click.stop @click="modalData.type='ACR'; modalData.status=true; modalData.data=content">
+                        <div class="btn" @click.stop @click="modalData.data=content; modalData.type='ACR'; modalData.status=true; ">
                             <p>set ACR</p>
                         </div>
                     </div>
@@ -240,9 +238,7 @@ const resourceAttributes = {
             description: "The privilege setting of the resource using this AccessControlPolicy",
             required:false, 
             disable: false, 
-            obj: {
-                type: "Object",                
-            }
+            value: []
         },
         'pvs': {
             type: "ACR", 
@@ -250,13 +246,7 @@ const resourceAttributes = {
             description: "The privilege setting for this AccessControlPolicy resource",
             required:true, 
             disable: false, 
-            obj: {
-                type: "Object",
-                acr: {type: "Array", required:false, disable: false, value: []},
-                acor: {type: "Array", required:false, disable: false, value: []},
-                acop: {type: "Number", required:false, disable: false, value: 0},
-                acco: {type: "Object", required:false, disable: false, obj: {}},
-            }
+            value: []
         },
         'ty': {
             type: "Number", 
@@ -622,7 +612,6 @@ export default {
         },
 
         isModified: function (val, oldVal) {
-            console.log(val);
             this.$emit('modified', val);
         }
         
