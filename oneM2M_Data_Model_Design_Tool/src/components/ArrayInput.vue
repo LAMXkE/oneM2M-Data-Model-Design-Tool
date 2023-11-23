@@ -11,12 +11,13 @@
     <ul class="Arrayitems">
         <li v-for="item2, idx2 in contents.value" :key="idx2" class="item">
             {{ item2 }}
-            <button class="arrayDelete" @click="contents.value.splice(idx2, 1)">x</button>
+            <button class="arrayDelete" @click="isModified=true; contents.value.splice(idx2, 1);">x</button>
         </li>
     </ul>
 </template>
 
 <script>
+
 export default {
     name: 'ArrayInput',
     emits: ['input', 'addArrayItem'],
@@ -30,7 +31,7 @@ export default {
         }
     },
     mounted: function(){
-        this.contents.value = this.content.value;
+        this.contents.value = JSON.parse(JSON.stringify(this.content.value));
     },
     props: {
         content: {
@@ -41,8 +42,10 @@ export default {
     watch: {
         contents: {
             deep: true,
-            handler(){
-                this.$emit('input', this.contents.value);
+            handler(newValue){
+                if(this.isModified){
+                    this.$emit('input', this.contents.value);
+                }
             },
         }
     },
@@ -63,7 +66,6 @@ export default {
                 }
                 
                 if(this.content.validation != undefined && !this.content.validation(str.value)){
-                    console.log("invalid value");
                     alert("invalid value");
                     return;
                 }

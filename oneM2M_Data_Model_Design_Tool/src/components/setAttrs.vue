@@ -5,6 +5,9 @@
         <div v-if="modalData.type == 'ACR'" class="modalBody">
             <setAcr 
             :acr_props="modalData.data.value"
+            @modified="(value) => { 
+                isModified=true;
+            }"
             @close="() => { modalData.status=false; modalData.data=undefined; modalData.type=''; }"
             @save="(value) => {  
                 modalData.data.value = value;
@@ -49,7 +52,7 @@
                         <ArrayInput
                         :content="content"
                         @input="(value) => { 
-                            isModified=true;
+                            if(value.length > 0) isModified = true;
                             content.value=value;
                             }"
                         >
@@ -102,7 +105,8 @@ import loadFromRemote from "@/components/loadFromRemote.vue";
 import setAcr from "./setAcr.vue";
 import ArrayInput from "./ArrayInput.vue";
 
-import deepClone from 'lodash';
+import { cloneDeep } from 'lodash';
+
 const resourceType = {
     0 : 'Mixed',
     1: 'ACP',
@@ -232,11 +236,11 @@ const resourceAttributes = {
             disable: false, 
             value: false
         },
-        'pv ': {
+        'pv': {
             type: "ACR", 
             fullName: "Privileges",
             description: "The privilege setting of the resource using this AccessControlPolicy",
-            required:false, 
+            required:true, 
             disable: false, 
             value: []
         },
@@ -316,7 +320,6 @@ const resourceAttributes = {
             disable: false, 
             value: [],
             validation: (value) => {
-                console.log(Object.keys(resourceAttributes[resourceType.AE]));
                 if(Object.keys(resourceAttributes[resourceType.AE]).indexOf(value) >= 0) return true;
                 return false;
             }
@@ -573,7 +576,7 @@ export default {
     },
     data() {
         return {
-            sE:  deepClone(resourceAttributes[this.element.ty]).__wrapped__, 
+            selectedElement:  {}, 
             isModified: false,
             modalData: {
                 status: false,
@@ -587,38 +590,37 @@ export default {
         window.addEventListener('beforeunload', () => { this.$emit('close', null); });
         // this.$emit('close', null);
     },
+    mounted() {
+        this.selectedElement = cloneDeep(resourceAttributes[this.element.ty]); 
+        Object.entries(this.element.attrs).forEach(([key, value]) => {
+            if(this.selectedElement[key])
+                this.selectedElement[key].value = value;
+        });
+    },
     computed: {
-        selectedElement: {
-            get: function () {
-                return this.sE;
-            },
-            set: function (newValue) {
-                Object.entries(this.element.attrs).forEach(([key, value]) => {
-                    if(newValue[key])
-                        newValue[key].value = value;
-                });
-                this.sE = newValue;
-                return this.sE;
-            }
-        }
+        // selectedElement: {
+        //     get: function () {
+        //         return this.sE;
+        //     },
+        //     set: function (newValue) {
+        //         Object.entries(this.element.attrs).forEach(([key, value]) => {
+        //             if(newValue[key])
+        //                 newValue[key].value = value;
+        //         });
+        //         this.sE = newValue;
+        //         return this.sE;
+        //     }
+        // }
     },
     watch: {
-        element: {
-            handler: function (val, oldVal) {
-                this.selectedElement = JSON.parse(JSON.stringify(resourceAttributes[this.element.ty])); 
-                this.isModified=false;
-            },
-            deep: true
-        },
-
-        isModified: function (val, oldVal) {
+        isModified: function (val) {
+            console.log("isModified", val);
             this.$emit('modified', val);
         }
         
     },
     methods: {
         validate: function (evt){
-            // console.log(evt);
             evt.preventDefault();
             for (const [key, value] of Object.entries(this.selectedElement)) {
                 if(value.required && value.value === ""){
