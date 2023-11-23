@@ -598,23 +598,6 @@ export default {
         });
     },
     computed: {
-        // selectedElement: {
-        //     get: function () {
-        //         return this.sE;
-        //     },
-        //     set: function (newValue) {
-        //         Object.entries(this.element.attrs).forEach(([key, value]) => {
-        //             if(newValue[key])
-        //                 newValue[key].value = value;
-        //         });
-        //         this.sE = newValue;
-        //         return this.sE;
-        //     }
-        // }
-    },
-    beforeMount() {
-        window.addEventListener('beforeunload', () => { this.$emit('close', null); });
-        // this.$emit('close', null);
     },
     watch: {
         isModified: function (val) {
