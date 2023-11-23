@@ -72,6 +72,7 @@
         <div class="btn button" style="background-color: lightblue;" @click="loadFile">
           Load
         </div>
+        <mq_re :cse1="cse1"></mq_re>
       </div>
     </div>
     <div v-if="attrSetting" class="modal">
@@ -122,6 +123,7 @@ import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
 import get_jsonfile from "@/components/json-parser.js";
+import mq_re from "@/components/mq-re.vue";
 
 const RT_CSE = 5;
 const RT_ACP = 1;
@@ -145,7 +147,8 @@ export default {
     navBar,
     draggable,
     nestedDraggable,
-    setAttrs
+    setAttrs,
+    mq_re,
     // rawDisplayer
   },
   data() {
@@ -174,8 +177,7 @@ export default {
       attrSettingModified: false,
       isDragging: false,
       selectedElement: {}
-    };
-
+    }
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
@@ -195,8 +197,6 @@ export default {
       this.create_oneM2M_resource();
      // console.log("create finish");
     },
-    
-
     setAttributes(element){
       this.selectedElement = element;
       this.attrSettingModified = false;
