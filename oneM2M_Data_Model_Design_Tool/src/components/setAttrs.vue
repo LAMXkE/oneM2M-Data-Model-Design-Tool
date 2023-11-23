@@ -612,6 +612,10 @@ export default {
         //     }
         // }
     },
+    beforeMount() {
+        window.addEventListener('beforeunload', () => { this.$emit('close', null); });
+        // this.$emit('close', null);
+    },
     watch: {
         isModified: function (val) {
             console.log("isModified", val);

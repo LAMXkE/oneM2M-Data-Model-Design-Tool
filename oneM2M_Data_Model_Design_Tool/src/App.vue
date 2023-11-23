@@ -86,6 +86,9 @@
         <div class="btn button" style="background-color: aquamarine;" @click="saveResourceTree">
           Save
         </div>
+        <div class="btn button" style="background-color: lightblue;" @click="loadFile">
+          Load
+        </div>
       </div>
     </div>
     <div v-if="attrSetting" class="modal">
@@ -133,6 +136,7 @@ import draggable from "vuedraggable";
 import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
+import get_jsonfile from "@/components/json-parser.js";
 
 const RT_CSE = 5;
 const RT_ACP = 1;
@@ -173,7 +177,6 @@ export default {
         }
       ],
       resources: [
-        
           { name: "AE", ty: RT_AE },
           { name: "CNT", ty: RT_CNT },
           { name: "ACP", ty: RT_ACP },
@@ -192,6 +195,7 @@ export default {
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
+    //get_jsonfile(cse);
     if (cse!=undefined) this.cse1 = cse;
   },
   methods: {
@@ -201,13 +205,25 @@ export default {
     },
     createResourceTree(){
       console.log("createResourceTree");
+      this.create_oneM2M_resource();
+     // console.log("create finish");
     },
+    
 
     setAttributes(element){
       this.selectedElement = element;
       this.attrSettingModified = false;
       this.attrSetting = true;
       element.selected = true;
+    },
+    create_oneM2M_resource()
+    {
+      const JSON_string = JSON.stringify(this.cse1);
+      const dataToSave = JSON.parse(JSON_string);
+      const filename = 'storagedata.json';
+      const element = document.createElement('a');
+      get_jsonfile(dataToSave);
+      //console.log("create finish")
     },
     exportTextFile() {
       const dataToSave = sessionStorage.getItem('CSE1');
@@ -217,6 +233,154 @@ export default {
       element.setAttribute('download', filename);
       document.body.appendChild(element);
       element.click();
+    },
+    loadFile() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = e.target.result;
+              sessionStorage.setItem('CSE1', data);
+              this.loadFromSessionStorage();
+            } catch (err) {
+              console.error('Invalid JSON file:', err);
+            }
+          };
+          reader.readAsText(file);
+        } else {
+          console.error('Invalid file type. Please upload a JSON file.');
+        }
+      };
+      fileInput.click();
+    },
+    loadFromSessionStorage() {
+      const data = sessionStorage.getItem('CSE1');
+      if (data) {
+        try {
+          const parsedData = JSON.parse(data);
+          if (!this.checkData(parsedData[0])) {
+            return;
+          }
+          this.cse1 = parsedData;
+        } catch (err) {
+          console.error('Invalid JSON data in sessionStorage:', err);
+        }
+      }
+    },
+    checkData(data) {    
+      const allowedResourcesMap = { /* childResource */
+        'AE': ['SUB', 'CNT', 'GRP', 'ACP'],
+        'CNT': ['SUB', 'CNT'],
+        'SUB': [],
+        'GRP': ['SUB'],
+      };
+      // const announceSyncType = ['UNI_DIRECTIONAL', 'BI_DIRECTIONAL'];
+      // const notificationEventCat = ['Immediate', 'BestEffort', 'Latest'];
+      // const notificationContentType = ['All_Attributes', 'Modified_Attributes', 'ResourceID', 'Trigger_Payload', 'TimeSeries_notification'];
+      // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
+
+      for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
+        if (Array.isArray(task.tasks)) { 
+          if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
+            alert("Invalid ChildResource(AE)"); 
+            return false;
+          }
+        }
+        const attribute = task.attrs;
+        if(task.ty == RT_AE){ /* AE */
+          if(
+            (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || typeof attribute.srv == "undefined") ||             // Mandatory Attribute
+            (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
+            (typeof attribute.api !== "undefined" && (typeof attribute.api !== 'string' || !attribute.api.startsWith('N'))) ||                // App-ID
+            (typeof attribute.aei !== "undefined" && typeof attribute.aei !== 'string') ||                                                    // AE-ID
+            (typeof attribute.rr == "undefined" && typeof attribute.rr !== 'boolean') ||                                                      // requestReachability
+            (typeof attribute.poa !== "undefined" && typeof attribute.poa !== 'string')                                                       // pointOfAccess
+            ){ 
+            alert("Invalid Loading(AE)");
+            return false;
+          }
+          if (Array.isArray(attribute.srv)) {                                                                                                 // supportedReleaseVersions
+            for (let i = 0; i < attribute.srv.length; i++) {
+              if (!['1','2','2a','3','4','5'].includes(attribute.srv[i])) {
+                alert("Invalid Loading(AE)");
+                return false;
+              }
+            }
+          }
+        }
+        if(task.ty == RT_CNT){ /* CNT */
+          if(
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.mni !== "undefined" && (!Number.isInteger(attribute.mni) || attribute.mni < 0)) ||                              // maxNrOfInstances
+            (typeof attribute.mbs !== "undefined" && (!Number.isInteger(attribute.mbs) || attribute.mbs < 0)) ||                              // maxByteSize
+            (typeof attribute.mia !== "undefined" && (!Number.isInteger(attribute.mia) || attribute.mia < 0))                                 // maxInstanceAge
+            ){ 
+            alert("Invalid Loading(CNT)");
+            return false;
+          }
+        }        
+        if(task.ty == RT_SUB){ /* SUB */
+          if(
+            (typeof attribute.nu == "undefined") ||                                                                                           // Mandatory Attribute
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.nu !== "undefined" && typeof attribute.nu !== 'string') ||                                                      // notificationURI
+            (typeof attribute.su !== "undefined" && typeof attribute.su !== 'string') ||                                                      // subscriberURI
+            (typeof attribute.nec !== "undefined" && (attribute.nec < 2 || attribute.nec > 4)) ||                                             // notificationEventCat
+            (typeof attribute.ln !== "undefined" && typeof attribute.ln !== 'boolean') ||                                                     // latestNotify
+            (typeof attribute.nct !== "undefined" && (attribute.nct < 1 || attribute.nct > 5))                                                // notificationContentType
+            ){ 
+            alert("Invalid Loading(SUB)");
+            return false;
+          }
+        }
+        if(task.ty == RT_GRP){ /* GRP */
+          if(
+            (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined") ||                                                   // Mandatory Attribute
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.mnm !== "undefined" && (!Number.isInteger(attribute.mnm) || attribute.mnm <= 0)) ||                             // maxNrOfMembers
+            (typeof attribute.mid !== "undefined" && typeof attribute.mid !== 'string') ||                                                    // memberIDs
+            (typeof attribute.mt !== "undefined" && (attribute.mt < 0 || attribute.mt > 38)) ||                                               // memberType
+            (typeof attribute.csy !== "undefined" && (attribute.csy < 1 || attribute.csy > 3)) ||                                             // consistencyStrategy
+            (typeof attribute.gn !== "undefined" && typeof attribute.gn !== 'string')                                                         // groupName 
+            ){ 
+            alert("Invalid Loading(GRP)");
+            return false;
+          }
+          if (Array.isArray(attribute.macp)) {                                                                                                // membersAccessControlPolicyIDs
+            for (let i = 0; i < attribute.macp.length; i++) {
+              if (typeof attribute.macp[i] !== 'string') {
+                alert("Invalid Loading(GRP)");
+                return false;
+              }
+            }
+          }
+        }
+        if(!this.checkData(task)) {
+          return false;
+        }
+      }
+      return true;
     },
   },
   watch: {
@@ -228,7 +392,7 @@ export default {
       }
     }
   }
-};
+}
 </script>
 <style scoped>
 #app{
