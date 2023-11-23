@@ -29,6 +29,9 @@ export default {
             isModified: false
         }
     },
+    mounted: function(){
+        this.contents.value = this.content.value;
+    },
     props: {
         content: {
             required: true,

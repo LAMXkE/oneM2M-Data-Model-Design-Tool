@@ -20,8 +20,8 @@
     <div class="row">
       <div class="col-3 key">
           <p class="fullName">
-              {{ acr.acor.fullName }}
-              <span class="tooltips">{{ acr.acop.description }}</span>
+              {{ acr.acor?.fullName }}
+              <span class="tooltips">{{ acr.acop?.description }}</span>
           </p>
       </div>
       <div class="col-9 values">
@@ -56,12 +56,11 @@
     </div>
   </div>
   <div>
-    <input type="button" value="Set ACR" @click="saveAcr" />
+    <input type="button" value="Save" @click="saveAcr" />
   </div>
 </template>
 
 <script>
-import { sum } from 'lodash';
 import ArrayInput from "@/components/ArrayInput.vue";
 
 export default {
@@ -77,48 +76,114 @@ export default {
   },
   data(){
     return {
-      acrs: this.acr_props,
-        acr_structure: {  
-          acop: {
-              type: "Checkbox", 
-              fullName:'Access Control Operations', 
-              description: "Access Control Operations",
-              required: true,
-              options:{
-                1: "Create",
-                2: "Retrieve",
-                4: "Update",
-                8: "Delete",
-                16: "Notify",
-                32: "Discover"
-              },
-              disable: false, 
-              selected: [],
-              value: sum(this.selected)
+      acr_list: [],
+      acr_structure: {  
+        acop: {
+            type: "Checkbox", 
+            fullName:'Access Control Operations', 
+            description: "Access Control Operations",
+            required: true,
+            options:{
+              1: "Create",
+              2: "Retrieve",
+              4: "Update",
+              8: "Delete",
+              16: "Notify",
+              32: "Discovery"
             },
-          acor: {
-            type: "Array", 
-            fullName: "Access Control Originators",
-            description: "Access Control Originators",
-            required: true, 
             disable: false, 
-            value: []
+            selected: [],
+            value: 0
           },
-          acco: {type: "Object", required:false, disable: false, placeholder:'Access Control Contexts', obj: {
-                  acip:{type: "Object", required:false, disable: false, obj: {
-                          ipv4: {type: "Array", required:false, disable: false, value: []},
-                          ipv6: {type: "Array", required:false, disable: false, value: []},
-                      }
-                  },
-              }
-          },
+        acor: {
+          type: "Array", 
+          fullName: "Access Control Originators",
+          description: "Access Control Originators",
+          required: true, 
+          disable: false, 
+          value: []
         },
+        acco: {type: "Object", required:false, disable: false, placeholder:'Access Control Contexts', obj: {
+                acip:{type: "Object", required:false, disable: false, obj: {
+                        ipv4: {type: "Array", required:false, disable: false, value: []},
+                        ipv6: {type: "Array", required:false, disable: false, value: []},
+                    }
+                },
+            }
+        },
+      },
+    }
+  },
+  mounted(){
+    var value = this.acr_props;
+    var result = [];
+    for(var i=0; i < value.length; i++){
+      result.push(JSON.parse(JSON.stringify(this.acr_structure)));
+      var acop = [];
+      if(value[i].acop & 1) acop.push(1);
+      if(value[i].acop & 2) acop.push(2);
+      if(value[i].acop & 4) acop.push(4);
+      if(value[i].acop & 8) acop.push(8);
+      if(value[i].acop & 16) acop.push(16);
+      if(value[i].acop & 32) acop.push(32);
+
+      result[i].acop.selected = acop;
+      result[i].acor.value = value[i].acor;
+      result[i].acco.value = value[i].acco;
+    }
+    console.log(result);
+    this.acr_list  = result;
+  },
+  computed: {
+    acrs : {
+      get(){
+        return this.acr_list;
+      },
+      set(value){
+        console.log(value);
+        // this.acrs = value;
+        var result = [];
+        for(var i=0; i < value.length; i++){
+          result.push(JSON.parse(JSON.stringify(this.acr_structure)));
+          var acop = [];
+          if(value[i].acop & 1) acop.push(1);
+          if(value[i].acop & 2) acop.push(2);
+          if(value[i].acop & 4) acop.push(4);
+          if(value[i].acop & 8) acop.push(8);
+          if(value[i].acop & 16) acop.push(16);
+          if(value[i].acop & 32) acop.push(32);
+
+          result[i].acop.selected = acop;
+          result[i].acor.value = value[i].acor;
+          result[i].acco.value = value[i].acco;
+        }
+        console.log(result);
+        this.acr_list  = result;
+      }
+    }
+  },
+  watch: {
+    acr_props: function(val){
+      console.log(val);
+      this.acrs = val;
     }
   },
   methods: {
     saveAcr(){
-      // console.log(this.acrs);
-      this.$emit('save', this.acrs);
+      var result = [];
+      for(var i=0; i<this.acrs.length; i++){
+        var acop = 0;
+        for(var j = 0 ; j < this.acrs[i].acop.selected.length ; j++){
+          acop += parseInt(this.acrs[i].acop.selected[j]);
+        }
+        console.log(acop);
+        result.push({
+          acop: acop,
+          acor: this.acrs[i].acor.value,
+          acco: this.acrs[i].acco.value
+        });
+      }
+      this.$emit('save', result);
     },
     addAcr() {
         this.acrs.push(JSON.parse(JSON.stringify(this.acr_structure)));
