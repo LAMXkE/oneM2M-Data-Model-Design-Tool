@@ -209,6 +209,7 @@ export default {
       const dataToSave = JSON.parse(JSON_string);
       const filename = 'storagedata.json';
       const element = document.createElement('a');
+      console.log("datatosave", dataToSave);
       get_jsonfile(dataToSave);
       //console.log("create finish")
     },

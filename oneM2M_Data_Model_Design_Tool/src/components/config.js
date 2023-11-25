@@ -2,7 +2,8 @@ export const server_info = {
     url : "sampleurl",
     port : 1234,
     cse_id : "cse-id",
-    cse_name : "cse-name"
+    cse_name : "cse-name", 
+    protocol : ""
 }
 
 export const resource = {

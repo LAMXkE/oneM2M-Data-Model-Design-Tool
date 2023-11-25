@@ -42,7 +42,7 @@ export function attribute_check(resource, currentNode ,attribute_list)
     }
   }
   //console.log(resource);
-  //create_resource(resource);
+  create_resource(resource);
 
   //console.log("---------");
   
@@ -96,7 +96,7 @@ export function make_request_resource(currentNode)
 
 
 export function bfs_json(jsonData) {
-  //console.log(jsonData);
+  console.log(jsonData);
   // let resource;
   let resource_req_que = []; 
     const queue = [jsonData];
@@ -134,24 +134,26 @@ export function bfs_json(jsonData) {
 
 
 //async function get_jsonfile(json_data)
-export function get_jsonfile()
+export function get_jsonfile(json_data)
 {
-  const jsonObject = readJSONFile();
+  console.log("now get_jsonfile", json_data);
+  //const jsonObject = readJSONFile();
   //console.log(jsonObject)
   //console.log(json_data)
   //bfs_json(JSON.stringify(jsonObject, null));
-  bfs_json(jsonObject);
+  bfs_json(json_data);
 }
 
+export default get_jsonfile;
 
-export default {
-  //resource,
-  get_jsonfile,
-  bfs_json,
-  make_request_resource,
-  attribute_check,
-  readJSONFile,
-}
+// export default {
+//   //resource,
+//   get_jsonfile,
+//   bfs_json,
+//   make_request_resource,
+//   attribute_check,
+//   readJSONFile,
+// }
 
 // JSON 데이터 가져오기
 
