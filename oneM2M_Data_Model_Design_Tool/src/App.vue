@@ -264,6 +264,7 @@ export default {
         'CNT': ['SUB', 'CNT'],
         'SUB': [],
         'GRP': ['SUB'],
+        'ACP': ['SUB'],
       };
       // const announceSyncType = ['UNI_DIRECTIONAL', 'BI_DIRECTIONAL'];
       // const notificationEventCat = ['Immediate', 'BestEffort', 'Latest'];
@@ -271,14 +272,24 @@ export default {
       // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
 
       for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
-        if (Array.isArray(task.tasks)) { 
+        if (Array.isArray(task.tasks)) { /* childResource */
           if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
             alert("Invalid ChildResource(AE)"); 
             return false;
           }
         }
         const attribute = task.attrs;
-        if(task.ty == RT_AE){ /* AE */
+        if(task.ty == RT_ACP){ /* ACP */
+          if(
+            (typeof attribute.pv == "undefined" || typeof attribute.pvs == "undefined") ||                                                    // Mandatory Attribute
+            (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl))                                                  // labels
+          ){ 
+            alert("Invalid Loading(ACP)");
+            return false;
+          }
+        }
+        else if(task.ty == RT_AE){ /* AE */
           if(
             (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || typeof attribute.srv == "undefined") ||             // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
@@ -304,7 +315,7 @@ export default {
             }
           }
         }
-        if(task.ty == RT_CNT){ /* CNT */
+        else if(task.ty == RT_CNT){ /* CNT */
           if(
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
@@ -320,7 +331,7 @@ export default {
             return false;
           }
         }        
-        if(task.ty == RT_SUB){ /* SUB */
+        else if(task.ty == RT_SUB){ /* SUB */
           if(
             (typeof attribute.nu == "undefined") ||                                                                                           // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -336,7 +347,7 @@ export default {
             return false;
           }
         }
-        if(task.ty == RT_GRP){ /* GRP */
+        else if(task.ty == RT_GRP){ /* GRP */
           if(
             (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined") ||                                                   // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -363,6 +374,9 @@ export default {
             }
           }
         }
+        else /* Invalid Resource Type */
+          return false; 
+
         if(!this.checkData(task)) {
           return false;
         }
