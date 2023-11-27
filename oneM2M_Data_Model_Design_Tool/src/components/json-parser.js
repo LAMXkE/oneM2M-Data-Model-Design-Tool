@@ -130,51 +130,6 @@ export function bfs_json(jsonData) {
   return resource_req_que;
 }
 
-// export function bfs_json(jsonData) {
-//   console.log(jsonData);
-//   // let resource;
-//   let resource_req_que = []; 
-//     const queue = [jsonData];
-//     var rn_list = "";
-//     // ty 번호순서대로 create요청 보내기 
-//     while (queue.length > 0) {
-
-//       const currentNode = queue.shift();
-//       // console.log("current Node is : ", currentNode);
-//       if (Array.isArray(currentNode)) {
-//         // console.log("now isArray");
-//         // 만약 현재 노드가 배열이면, 배열의 각 요소를 큐에 추가
-//         for (const item of currentNode) {
-//           queue.push(item);
-//         }
-//       } else if (typeof currentNode === 'object') {
-//         // console.log("now object");
-//         // 만약 현재 노드가 객체이면, "name" 및 "ty" 값을 확인
-//         if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) {
-//         // console.log(currentNode);
-//         // console.log(`Name: ${currentNode.name}, Ty: ${currentNode.ty}`);
-//         // resource = make_request_resource(currentNode);
-//          resource_req_que.push(make_request_resource(currentNode, rn_list));
-//          console.log(currentNode);
-//          if (currentNode.hasOwnProperty("id"))
-//          {
-//           rn_list = rn_list + "/" + currentNode.attrs.rn;
-//           console.log(rn_list);
-//          }
-         
-//         // console.log(resource)
-//         }
-  
-//         // 객체의 하위 항목을 큐에 추가
-//         for (const key in currentNode) {
-//           if (Array.isArray(currentNode[key]) || typeof currentNode[key] === 'object') {
-//             queue.push(currentNode[key]);
-//           }
-//         }
-//       }
-//     }
-//     return resource_req_que;
-//   }
 
 
 //async function get_jsonfile(json_data)
@@ -199,21 +154,4 @@ export default get_jsonfile;
 //   readJSONFile,
 // }
 
-// JSON 데이터 가져오기
 
-// if (jsonObject) {
-//     // JSON 데이터를 그대로 출력
-//     console.log(JSON.stringify(jsonObject, null, 2));
-// }
-
-// if (jsonObject) {
-//     // jsonObject를 사용하여 JSON 데이터를 처리합니다.
-//     console.log(jsonObject);
-
-//     // 예시: JSON 데이터의 "key" 프로퍼티 값을 출력
-//     if (jsonObject.hasOwnProperty("key")) {
-//         console.log(jsonObject.key);
-//     } else {
-//         console.log("JSON 데이터에 'key' 프로퍼티가 없습니다.");
-//     }
-// }
