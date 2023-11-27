@@ -5,10 +5,8 @@ async function http_cse_retrieve(host, port, path)
     const url = `http://${host}:${port}/${path}`;
 
     const headers = {
-        'X-M2M-Origin': "tool_id", //tool에서 설정해야됨
-        'Content-Type': `application/json;ty=2`,
+        'X-M2M-Origin': "CSEretrieve", //tool에서 설정해야됨
     }
-
     const body_attr = {
     } 
 // operation code RETRIEVE 2
@@ -25,3 +23,5 @@ async function http_cse_retrieve(host, port, path)
         throw error;
       }
 }
+
+export default http_cse_retrieve;
