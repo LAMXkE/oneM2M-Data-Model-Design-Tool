@@ -73,13 +73,14 @@ async function select_resource(attr)
 /*
 
 */
-async function create_resource(attr, path)
+async function create_resource(attr, path, targetIP)
 { 
-  console.log(path);
+  // console.log(path);
+  // console.log("create_resource : ", targetIP); 
   let result = path.replace(/\/[^/]*$/, '');
-  console.log("path : ", result);
+  // console.log("path : ", result);
     // console.log("hello im free");
-     const url = `http://${server_info["url"]}:${server_info["port"]}/${server_info["cse_name"]}${result}`;
+     const url = `${targetIP}${result}`;
     console.log(url);
     var attrs = {};
 

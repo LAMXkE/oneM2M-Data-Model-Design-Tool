@@ -21,7 +21,7 @@ async function http_cse_retrieve(originator, host, port, path)
           withCredentials: false,
         });
         console.log(`[CSE data Retrieved]`)
-        console.log(response.data);
+        // console.log(response.data);
         return response.data;
       } catch (error) {
         console.log(`[CSE data Retrieve Failed]`)
