@@ -119,10 +119,15 @@
           if(value.value == 0){
             return;
           }
-          
-          if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
-            this.selectedElement.attrs[key] = parseInt(value.value);
-          }else{
+          if(value.dataType === 'Number'){
+            if(parseInt(value.value) != NaN && parseInt(value.value) != 0){
+              this.selectedElement.attrs[key] = parseInt(value.value);
+            }
+            else{
+              this.selectedElement.attrs[key] = value.value;
+            }
+          }
+          else{
             this.selectedElement.attrs[key] = value.value;
           }
           callback();
