@@ -119,14 +119,14 @@ export const resourceAttributes = {
             value: [],
             raw_value: ''
         },
-        'cr': {
-            type: "Boolean", 
-            fullName: "Creator",
-            description: "Choose whether add creator attribute to the resource",
-            required:false, 
-            disable: false, 
-            value: false
-        },
+        // 'cr': {
+        //     type: "Boolean", 
+        //     fullName: "Creator",
+        //     description: "Choose whether add creator attribute to the resource",
+        //     required:false, 
+        //     disable: false, 
+        //     value: false
+        // },
         'pv': {
             type: "ACR", 
             fullName: "Privileges",
@@ -214,6 +214,18 @@ export const resourceAttributes = {
                 if(Object.keys(resourceAttributes[resourceType.AE]).indexOf(value) >= 0) return true;
                 return false;
             }
+        },
+        'ast':{
+            type: "Select",
+            fullName: "Announce Sync Type",
+            description: "Set announce sync type",
+            options: {
+                1: 'UNI DIRECTIONAL',
+                2: 'BI DIRECTIONAL'
+            },
+            required:false,
+            disable: false,
+            value: 0
         },
         'lbl': {
             type: "Array", 
@@ -320,6 +332,18 @@ export const resourceAttributes = {
                 return false;
             }
         },
+        'ast':{
+            type: "Select",
+            fullName: "Announce Sync Type",
+            description: "Set announce sync type",
+            options: {
+                1: 'UNI DIRECTIONAL',
+                2: 'BI DIRECTIONAL'
+            },
+            required:false,
+            disable: false,
+            value: 0
+        },
         'cr': {
             type: "Boolean", 
             fullName: "Creator",
@@ -382,6 +406,14 @@ export const resourceAttributes = {
             disable: false, 
             value: ''
         },
+        'lbl': {
+            type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource",
+            required:false, 
+            disable: false, 
+            value: [],
+        },
         'mt': {
             type: "Select", 
             fullName: "Member Type",
@@ -404,14 +436,6 @@ export const resourceAttributes = {
             disable:false, 
             value: 0
         },
-        'lbl': {
-            type: "Array", 
-            fullName: "Label",
-            description: "The label of the resource",
-            required:false, 
-            disable: false, 
-            value: [],
-        },
         'acpi': {
             type: "Array", 
             fullName: "Access Control Policy IDs",
@@ -427,6 +451,81 @@ export const resourceAttributes = {
             required:false, 
             disable: false, 
             value: false
+        },
+        'mni': {
+            type: "Number",
+            fullName: "Max Nr of Instances",
+            description: "The maximum number of instances of the resource",
+            required:false,
+            disable: false,
+            value: 0,
+            validation: function (value) { 
+                if(value < 0) return false;
+                return true;
+            }
+        },
+        'mid':{
+            type: "Array",
+            fullName: "Member ID",
+            description: "Set member ID",
+            required:false,
+            disable: false,
+            value: []
+        },
+        'gn':{
+            type: "text",
+            fullName: "Group Name",
+            description: "Set group name",
+            required:false,
+            disable: false,
+            value: ''
+        },
+        'macp':{
+            type: "Array",
+            fullName: "Member ACP",
+            description: "Set member ACP",
+            required:false,
+            disable: false,
+            value: []
+        },
+        'at': {
+            type: "Array",
+            fullName: "announceTo",
+            description: "Set cse to announce this resource. Can be CSE-ID or URL",
+            required:false,
+            disable: false,
+            value: [],
+            validation: function (value) { 
+                if(value[0] == '/') return true;
+                if(value.substring(0, 7) == 'http://') return true;
+                if(value.substring(0, 7) == 'mqtt://') return true;
+                if(value.substring(0, 7) == 'coap://') return true;
+                return false;
+            }
+        },
+        'aa': {
+            type: "Array", 
+            fullName: "Announced Attribute",
+            description: "Attributes to announce",
+            required:false,
+            disable: false,
+            value: [],
+            validation: function (value) { 
+                if(Object.keys(resourceAttributes[resourceType.GRP]).indexOf(value) >= 0) return true;
+                return false;
+            }
+        },
+        'ast':{
+            type: "Select",
+            fullName: "Announce Sync Type",
+            description: "Set announce sync type",
+            options: {
+                1: 'UNI DIRECTIONAL',
+                2: 'BI DIRECTIONAL'
+            },
+            required:false,
+            disable: false,
+            value: 0
         },
         'ty': {
             type: "Number", 

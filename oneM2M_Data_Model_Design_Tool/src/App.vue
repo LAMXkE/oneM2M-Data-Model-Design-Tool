@@ -167,11 +167,11 @@ export default {
         }
       ],
       resources: [
-          { name: "AE", ty: RT.RT_AE },
-          { name: "CNT", ty: RT.RT_CNT },
-          { name: "ACP", ty: RT.RT_ACP },
-          { name: "GRP", ty: RT.RT_GRP },
-          { name: "SUB", ty: RT.RT_SUB },
+          { name: "AE", ty: RT.AE },
+          { name: "CNT", ty: RT.CNT },
+          { name: "ACP", ty: RT.ACP },
+          { name: "GRP", ty: RT.GRP },
+          { name: "SUB", ty: RT.SUB },
           // { name: "FCNT", ty: RT_FCNT },
       ]
       ,
