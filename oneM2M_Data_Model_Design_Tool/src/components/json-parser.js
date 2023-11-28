@@ -24,7 +24,7 @@ export function readJSONFile() {
     }
 }
 
-export function attribute_check(resource, currentNode ,attribute_list, path)
+export function attribute_check(resource, currentNode ,attribute_list, path, targetIP)
 {
   //console.log("---------");
   //console.log(currentNode);
@@ -35,14 +35,22 @@ export function attribute_check(resource, currentNode ,attribute_list, path)
       resource[key] = currentNode[key];
     }
     if (currentNode["attrs"].hasOwnProperty(key)) 
-    {
+    { 
+    // console.log("!!", key, currentNode["attrs"][key]);
       resource[key] = currentNode["attrs"][key];//JSON.parse(JSON.stringify(currentNode[key]));
+      if (key == "cr")
+      {
+        if (resource[key] == true)
+        {
+          resource[key] = NULL; 
+        }
+      }
       //console.log(currentNode[key]);
       //resource[]
     }
   }
   //console.log(resource);
-  create_resource(resource, path);
+  create_resource(resource, path, targetIP);
 
   //console.log("---------");
   
@@ -55,7 +63,7 @@ export function attribute_check(resource, currentNode ,attribute_list, path)
   // return resource;
 }
 
-export function make_request_resource(currentNode, path)
+export function make_request_resource(currentNode, path, targetIP)
 {
   //ty, rn + resource 형성, http-request에 데이터 전송
   //ty에 따라서 호출해야하는 함수가 다름.. 
@@ -73,28 +81,28 @@ export function make_request_resource(currentNode, path)
   //console.log("hello im ty", currentNode.ty);
   if (currentNode.ty == 1)
   {
-    attribute_check(resource, currentNode, acp_attribute, path);
+    attribute_check(resource, currentNode, acp_attribute, path, targetIP);
   }
   else if (currentNode.ty == 2)
   {
-    attribute_check(resource, currentNode, ae_attribute, path);
+    attribute_check(resource, currentNode, ae_attribute, path, targetIP);
   }
   else if (currentNode.ty == 3)
   {
-    attribute_check(resource, currentNode, cnt_attribute, path);
+    attribute_check(resource, currentNode, cnt_attribute, path, targetIP);
   }
   else if (currentNode.ty == 9)
   {
-    attribute_check(resource, currentNode, grp_attribute, path);
+    attribute_check(resource, currentNode, grp_attribute, path, targetIP);
   }
   else if (currentNode.ty == 23)
   {
-    attribute_check(resource, currentNode, sub_attribute, path);
+    attribute_check(resource, currentNode, sub_attribute, path, targetIP);
   }
   return resource
 }
 
-export function bfs_json(jsonData) {
+export function bfs_json(jsonData, targetIP) {
   console.log(jsonData);
   let resource_req_que = []; 
   const queue = [[jsonData, ""]]; // 노드와 부모 노드 정보를 함께 저장
@@ -116,7 +124,7 @@ export function bfs_json(jsonData) {
           rn_list = parentRn + "/" + currentNode.attrs.rn; // 부모 노드 정보와 현재 노드의 rn 조합
           // console.log(rn_list);
         }
-        resource_req_que.push(make_request_resource(currentNode, rn_list)); // 부모 노드 정보 전달
+        resource_req_que.push(make_request_resource(currentNode, rn_list, targetIP)); // 부모 노드 정보 전달
       }
 
       for (const key in currentNode) {
@@ -133,14 +141,15 @@ export function bfs_json(jsonData) {
 
 
 //async function get_jsonfile(json_data)
-export function get_jsonfile(json_data)
+export function get_jsonfile(json_data, targetIP)
 {
+  // console.log("12",targetIP)
   // console.log("now get_jsonfile", json_data);
   //const jsonObject = readJSONFile();
   //console.log(jsonObject)
   //console.log(json_data)
   //bfs_json(JSON.stringify(jsonObject, null));
-  bfs_json(json_data);
+  bfs_json(json_data, targetIP);
 }
 
 export default get_jsonfile;

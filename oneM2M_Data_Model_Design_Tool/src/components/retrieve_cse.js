@@ -1,27 +1,36 @@
 import axios from 'axios';
 
-async function http_cse_retrieve(host, port, path)
+axios.defaults.withCredentials = false;
+
+async function http_cse_retrieve(originator, host, port, path, callback)
 {
+
+  
     const url = `http://${host}:${port}/${path}`;
 
+    // console.log("url, origin", url, originator);
+
     const headers = {
-        'X-M2M-Origin': "CSEretrieve", //tool에서 설정해야됨
+        "X-M2M-Origin": originator
     }
-    const body_attr = {
-    } 
-// operation code RETRIEVE 2
+    // console.log(headers);
+  // operation code RETRIEVE 2
     try {
-        const response = await axios.get(url, body_attr, {
+        const response = await axios.get(url, {
           headers: headers,
           withCredentials: false,
         });
         console.log(`[CSE data Retrieved]`)
-        return response.data;
+        // console.log(response.data);
+        // return response.data;
+        callback(response.data);
       } catch (error) {
         console.log(`[CSE data Retrieve Failed]`)
         //console.log(url);
         throw error;
       }
+
+    
 }
 
 export default http_cse_retrieve;

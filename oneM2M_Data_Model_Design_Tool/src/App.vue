@@ -4,11 +4,15 @@
   </header>
   <div class="configure">
     <div class="box">
+      <div class="key">Originator</div>
+      <input type="text" v-model="originator" />
+    </div>
+    <div class="box">
       <div class="key">CSE IP address</div>
-      <input type="text" :model="targetIP" placeholder="http://127.0.0.1:3000/TinyIoT" />
+      <input type="text" v-model="targetIP" placeholder="http://127.0.0.1:3000/TinyIoT" />
     </div>
     <div>
-        <div class="btn button">Load</div>
+        <div class="btn button" @click="loadFromRemoteCSE">Load</div>
     </div>
   </div>
   <div class="body">
@@ -115,10 +119,15 @@
           if(value.value == 0){
             return;
           }
-          
-          if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
-            this.selectedElement.attrs[key] = parseInt(value.value);
-          }else{
+          if(value.dataType === 'Number'){
+            if(parseInt(value.value) != NaN && parseInt(value.value) != 0){
+              this.selectedElement.attrs[key] = parseInt(value.value);
+            }
+            else{
+              this.selectedElement.attrs[key] = value.value;
+            }
+          }
+          else{
             this.selectedElement.attrs[key] = value.value;
           }
           callback();
@@ -137,6 +146,7 @@ import draggable from "vuedraggable";
 import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
+import { resourceType as RT } from "./components/attributes";
 import get_jsonfile from "@/components/json-parser.js";
 import mq_re from "@/components/mq-re.vue";
 import http_cse_retrieve from "@/components/retrieve_cse.js"
@@ -172,7 +182,7 @@ export default {
       cse1: [
       {
           name: "CSE1",
-          ty: RT_CSE,
+          ty: RT.CSE,
           tasks: [
           ],
           attrs:{
@@ -181,11 +191,11 @@ export default {
         }
       ],
       resources: [
-          { name: "AE", ty: RT_AE },
-          { name: "CNT", ty: RT_CNT },
-          { name: "ACP", ty: RT_ACP },
-          { name: "GRP", ty: RT_GRP },
-          { name: "SUB", ty: RT_SUB },
+          { name: "AE", ty: RT.AE },
+          { name: "CNT", ty: RT.CNT },
+          { name: "ACP", ty: RT.ACP },
+          { name: "GRP", ty: RT.GRP },
+          { name: "SUB", ty: RT.SUB },
           // { name: "FCNT", ty: RT_FCNT },
       ]
       ,
@@ -193,14 +203,15 @@ export default {
       attrSettingModified: false,
       isDragging: false,
       selectedElement: {},
-      targetIP:""
-    };
-
+      targetIP: "",
+      originator: "Cae-test-1"
+    }
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
     //get_jsonfile(cse);
     if (cse!=undefined) this.cse1 = cse;
+    this.targetIP = sessionStorage.getItem('targetIP');
   },
   methods: {
     saveResourceTree(){
@@ -224,8 +235,10 @@ export default {
       const dataToSave = JSON.parse(JSON_string);
       const filename = 'storagedata.json';
       const element = document.createElement('a');
-      console.log("datatosave", dataToSave);
-      get_jsonfile(dataToSave);
+      // console.log("datatosave", dataToSave);
+      // console.log("targetIP : ", this.targetIP);
+      const target_IP = this.targetIP;
+      get_jsonfile(dataToSave, target_IP);
       //console.log("create finish")
     },
     exportTextFile() {
@@ -259,6 +272,45 @@ export default {
         }
       };
       fileInput.click();
+    },
+    loadFromRemoteCSE(){
+      console.log("loadFromRemoteCSE");
+      console.log(this.targetIP);
+      sessionStorage.setItem('targetIP', this.targetIP);
+      if(this.targetIP === ""){
+        alert("Please input CSE IP address");
+        return;
+      }
+      const url = this.targetIP;
+      const protocol = url.split(':')[0];
+      var ip = "";
+      var port = "";
+      var path = "";
+      if(url.split(':').length == 3){
+        ip = url.split(':')[1].replace('//','');
+        port = url.split(':')[2].split('/')[0];
+        path = url.split(':')[2].split('/').slice(1).join('/');
+      }
+      else{
+        ip = url.split(':')[1].replace('//','');
+        port = "80";
+        path = url.split(':')[1].split('/').slice(1).join('/');
+      }
+      console.log(protocol, ip, port, path);
+      if(protocol === "http"){
+        const setCSEData = (data) => {
+          console.log(data['m2m:cb']);
+          this.cse1[0].attrs = data['m2m:cb'];
+        };
+        http_cse_retrieve(this.originator, ip, port, path, setCSEData);
+        // console.log(cb);
+      }
+      else if(protocol === "https"){
+        alert("https is not supported yet");
+      }
+      else{
+        alert("Please input correct protocol");
+      }
     },
     loadFromSessionStorage() {
       const data = sessionStorage.getItem('CSE1');
@@ -294,7 +346,7 @@ export default {
           }
         }
         const attribute = task.attrs;
-        if(task.ty == RT_AE){ /* AE */
+        if(task.ty == RT.AE){ /* AE */
           if(
             (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || typeof attribute.srv == "undefined") ||             // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
@@ -320,7 +372,7 @@ export default {
             }
           }
         }
-        if(task.ty == RT_CNT){ /* CNT */
+        if(task.ty == RT.CNT){ /* CNT */
           if(
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
@@ -336,7 +388,7 @@ export default {
             return false;
           }
         }        
-        if(task.ty == RT_SUB){ /* SUB */
+        if(task.ty == RT.SUB){ /* SUB */
           if(
             (typeof attribute.nu == "undefined") ||                                                                                           // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -352,7 +404,7 @@ export default {
             return false;
           }
         }
-        if(task.ty == RT_GRP){ /* GRP */
+        if(task.ty == RT.GRP){ /* GRP */
           if(
             (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined") ||                                                   // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -415,7 +467,6 @@ export default {
 }
 .configure .box {
   border: 1px solid black;
-  width: 50%;
   padding: 5px;
   margin-left: 10px;
   margin-right: 10px;
