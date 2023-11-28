@@ -4,11 +4,12 @@
   </header>
   <div class="configure">
     <div class="box">
+      <div class="key">Originator</div>
+      <input type="text" v-model="originator" />
+    </div>
+    <div class="box">
       <div class="key">CSE IP address</div>
-      <input 
-      v-model="targetIP" 
-      placeholder="http://127.0.0.1:3000/TinyIoT" 
-      />
+      <input type="text" v-model="targetIP" placeholder="http://127.0.0.1:3000/TinyIoT" />
     </div>
     <div>
         <div class="btn button" @click="loadFromRemoteCSE">Load</div>
@@ -145,6 +146,20 @@ import get_jsonfile from "@/components/json-parser.js";
 import mq_re from "@/components/mq-re.vue";
 import http_cse_retrieve from "@/components/retrieve_cse.js"
 
+const RT_CSE = 5;
+const RT_ACP = 1;
+const RT_AE = 2;
+const RT_CNT = 3;
+const RT_GRP = 9;
+const RT_SUB = 23;
+const RT_FCNT = 7;
+const RT_TS = 8;
+const RT_TSI = 9;
+const RT_TSR = 10;
+const RT_MGMTOBJ = 11;
+const RT_NODE = 14;
+
+
 export default {
   name: "App",
   display: "app",
@@ -182,22 +197,15 @@ export default {
       attrSetting : false,
       attrSettingModified: false,
       isDragging: false,
-<<<<<<< HEAD
       selectedElement: {},
-      targetIP: ""
-    };
-
-=======
-      selectedElement: {}
+      targetIP: "",
+      originator: "Cae-test-1"
     }
->>>>>>> origin/main
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
     //get_jsonfile(cse);
     if (cse!=undefined) this.cse1 = cse;
-  },
-  mounted(){
     this.targetIP = sessionStorage.getItem('targetIP');
   },
   methods: {
@@ -268,10 +276,29 @@ export default {
       }
       const url = this.targetIP;
       const protocol = url.split(':')[0];
-      const ip = url.split(':')[1].replace('//','');
-      const port = url.split(':')[2].split('/')[0];
-      const path = url.split(':')[2].split('/').slice(1).join('/');
+      var ip = "";
+      var port = "";
+      var path = "";
+      if(url.split(':').length == 3){
+        ip = url.split(':')[1].replace('//','');
+        port = url.split(':')[2].split('/')[0];
+        path = url.split(':')[2].split('/').slice(1).join('/');
+      }
+      else{
+        ip = url.split(':')[1].replace('//','');
+        port = "80";
+        path = url.split(':')[1].split('/').slice(1).join('/');
+      }
       console.log(protocol, ip, port, path);
+      if(protocol === "http"){
+        http_cse_retrieve(this.originator, ip, port, path);
+      }
+      else if(protocol === "https"){
+        alert("https is not supported yet");
+      }
+      else{
+        alert("Please input correct protocol");
+      }
     },
     loadFromSessionStorage() {
       const data = sessionStorage.getItem('CSE1');
@@ -428,7 +455,6 @@ export default {
 }
 .configure .box {
   border: 1px solid black;
-  width: 50%;
   padding: 5px;
   margin-left: 10px;
   margin-right: 10px;

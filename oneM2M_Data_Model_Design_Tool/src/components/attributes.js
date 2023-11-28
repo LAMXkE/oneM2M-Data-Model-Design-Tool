@@ -161,15 +161,6 @@ export const resourceAttributes = {
             disable: false, 
             value: ''
         },
-        'aei': {
-            type: "text", 
-            fullName: "AE-ID",
-            description: "The AE-ID of the resource",  
-            required:true, 
-            disable: false, 
-            value: ''
-            
-        },
         'api': {
             type: "text",
             fullName: "App-ID",
