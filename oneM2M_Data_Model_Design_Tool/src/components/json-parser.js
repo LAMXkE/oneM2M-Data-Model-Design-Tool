@@ -35,8 +35,16 @@ export function attribute_check(resource, currentNode ,attribute_list, path)
       resource[key] = currentNode[key];
     }
     if (currentNode["attrs"].hasOwnProperty(key)) 
-    {
+    { 
+    // console.log("!!", key, currentNode["attrs"][key]);
       resource[key] = currentNode["attrs"][key];//JSON.parse(JSON.stringify(currentNode[key]));
+      if (key == "cr")
+      {
+        if (resource[key] == true)
+        {
+          resource[key] = NULL; 
+        }
+      }
       //console.log(currentNode[key]);
       //resource[]
     }

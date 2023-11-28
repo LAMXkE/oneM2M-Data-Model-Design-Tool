@@ -14,8 +14,6 @@ async function http_cse_retrieve(originator, host, port, path)
         "X-M2M-Origin": originator
     }
     // console.log(headers);
-    const body_attr = {
-    } 
   // operation code RETRIEVE 2
     try {
         const response = await axios.get(url, {

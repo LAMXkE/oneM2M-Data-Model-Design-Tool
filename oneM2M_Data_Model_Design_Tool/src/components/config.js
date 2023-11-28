@@ -1,5 +1,5 @@
 export const server_info = {
-    url : "server_ip",
+    url : "192.168.64.137",
     port : 3000,
     cse_id : "tinyiot",
     cse_name : "TinyIoT", 
