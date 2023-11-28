@@ -76,14 +76,6 @@ export const resourceAttributes = {
             disable: false, 
             value: 1
         },  
-        cb: {
-            type: "text", 
-            fullName: "CSE Base",
-            description: "The CSE Base of the resource",
-            required:true, 
-            disable: false, 
-            value: ''
-        },
         acpi: {
             type: "Array", 
             fullName: "Access Control Policy IDs",
