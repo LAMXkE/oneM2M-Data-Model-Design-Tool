@@ -2,6 +2,15 @@
   <header>
     <navBar class="nav" />
   </header>
+  <div class="configure">
+    <div class="box">
+      <div class="key">CSE IP address</div>
+      <input type="text" :model="targetIP" placeholder="http://127.0.0.1:3000/TinyIoT" />
+    </div>
+    <div>
+        <div class="btn button">Load</div>
+    </div>
+  </div>
   <div class="body">
     <div class="canvas">
         <nestedDraggable 
@@ -14,7 +23,9 @@
                   }"
           :min-height="200"
           item-key="id"
-          :clickMethod="setAttributes"
+          @clicked="(element) => { 
+            this.setAttributes(element); 
+          }"
           @move="(evt) => { this.isDragging = true; }"
           :dragoverBubble="true"
           class="dragArea resourceTree"
@@ -35,6 +46,12 @@
               item-key="id"
               @change="(evt) => { 
                 this.isDragging = false; 
+                // console.log(evt);
+                if(this.selectedElement)
+                  this.selectedElement.selected=false; 
+                this.selectedElement = undefined; 
+                this.attrSettingModified = false;
+
                 return evt;
               }"
               >
@@ -113,8 +130,6 @@
       
   </div>
   <rawDisplayer class="col-4" :value="cse1" title="List 1" />
-
-  <rawDisplayer class="col-4" :value="resources" title="List 2" />
 </template>
 
 <script>
@@ -177,8 +192,10 @@ export default {
       attrSetting : false,
       attrSettingModified: false,
       isDragging: false,
-      selectedElement: {}
-    }
+      selectedElement: {},
+      targetIP:""
+    };
+
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
@@ -186,9 +203,6 @@ export default {
     if (cse!=undefined) this.cse1 = cse;
   },
   methods: {
-    log: function(evt) {
-      // window.console.log(evt);
-    },  
     saveResourceTree(){
       console.log("saveResourceTree");
       this.exportTextFile();
@@ -388,6 +402,43 @@ export default {
   overflow: hidden;
 }
 
+.configure {
+  display: flex;
+  flex-direction: row;
+  /* justify-content: space-between; */
+  align-items: flex-start;
+  margin-left: 10px;
+  margin-right: 10px;
+  min-width: 1200px;
+  overflow: hidden;
+
+}
+.configure .box {
+  border: 1px solid black;
+  width: 50%;
+  padding: 5px;
+  margin-left: 10px;
+  margin-right: 10px;
+  background-color: #eee;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  min-height: 20px;
+}
+
+.configure .box .key {
+  width: 200px;
+  text-align: center;
+}
+
+.configure .box input {
+  flex-grow: 1;
+  border-radius: 5px;
+  padding: 5px;
+  width: 100%;
+}
+
 .body {
   display: flex;
   flex-direction: row;
@@ -426,6 +477,7 @@ export default {
   margin-bottom: 15px;
   min-width: 1200px;
   overflow: hidden;
+  margin-right: 0px;
 }
 
 .dragArea {

@@ -1,125 +1,16 @@
-<template>
-<div>
-    <div v-if="modalData.status" class="modal">
-        <div class="overlay"></div>
-        <div v-if="modalData.type == 'ACR'" class="modalBody">
-            <setAcr 
-            :acr_props="modalData.data.value"
-            @modified="(value) => { 
-                isModified=true;
-            }"
-            @close="() => { modalData.status=false; modalData.data=undefined; modalData.type=''; }"
-            @save="(value) => {  
-                modalData.data.value = value;
-                }"
-            />
-        </div>
-        <div v-if="modalData.type == 'LOAD'" class="modalBody">
-            <loadFromRemote />
-        </div>
-    </div>
-    <div class="titleBox">
-        <p>{{ element.name }} Attributes</p>
-        <div class="closeBtn" @click="confirmClose">
-            <svg width="25px" height="25px" version="1.0" id="katman_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-            viewBox="0 0 1436 1054" style="enable-background:new 0 0 1436 1054;" xml:space="preserve">
-                <path d="M718.5,453.8l224-224.3c20.4-20.4,53.3-20.4,73.6,0c20.4,20.4,20.4,53.3,0,73.6l-224,224.6l224,224
-                c20.4,20.4,20.4,53.3,0,73.6c-20.4,20.4-53.3,20.4-73.6,0l-224-224l-224.6,224c-20.4,20.4-53.3,20.4-73.6,0
-                c-20.4-20.4-20.4-53.3,0-73.6l224-224L420.4,303.2c-20.5-20.4-20.5-53.3-0.1-73.6s53.3-20.4,73.6,0l224.6,224V453.8z"/>
-            </svg>
-        
-        </div>
-    </div>
-    <form @submit="validate" id="attrForm">
-        <div class="attrBox">
-            <div v-for="(content, key) in selectedElement" class="attrRow" :key="key">
-                <div class="col-3 key">
-                    <p class="fullName">
-                        {{ content.fullName }}
-                        <span class="tooltips">{{ content.description }}</span>
-                    </p>
+export const resourceType = {
+    Mixed: 0,
+    ACP: 1,
+    AE: 2,
+    CNT: 3,
+    CIN: 4,
+    CSE: 5,
+    CSR: 16,
+    SUB: 23,
+    GRP: 9
+};
 
-                </div>
-                <div class="col-9 values">
-                    <select :name="key" v-if="content.type == 'Select'" v-model="content.value" @keydown.enter.prevent="" @input="isModified=true" class="selectAttr">
-                        <option v-for="option2,key2 in content.options" :key="key2" :value="key2">{{ option2 }}</option>
-                    </select>
-                    <select :name="key" v-if="content.type == 'Boolean'" v-model="content.value" class="selectAttr" @input="isModified=true">
-                        <option :value="true">true</option>
-                        <option :value="false">false</option>
-                    </select>
-                    <div v-if="content.type=='Array'" class="arrayInput">
-                        <ArrayInput
-                        :content="content"
-                        @input="(value) => { 
-                            if(value.length > 0) isModified = true;
-                            content.value=value;
-                            }"
-                        >
-
-                        </ArrayInput>
-                    </div>
-                    <div v-if="content.type=='Checkbox'" class="CheckboxInput">
-                        <div v-for="option, idx in content.options" class="Checkbox" :key="idx">
-                            <input type="checkbox" v-model="content.value" :key="idx" :value="option" @input="isModified=true">
-                            <span>
-                                {{ option }}
-                            </span>
-                        </div>
-                    </div>
-                    <div v-if="content.type=='ACR'" class="">
-                        <div class="btn" @click.stop @click="modalData.data=content; modalData.type='ACR'; modalData.status=true; ">
-                            <p>set ACR</p>
-                        </div>
-                    </div>
-                    <input v-if="content.type == 'text' || content.type == 'Number'" 
-                    :name="key" 
-                    :type="content.type" 
-                    :placeholder="content.placeholder"
-                    :disabled="content.disable" 
-                    v-model="content.value" 
-                    :required="content.required"
-                    autocomplete="off"
-                    @input="isModified=true"
-                    @keydown.enter.prevent=""
-                    />
-                </div>
-            </div>
-        </div>
-    </form>
-    <div class="buttonBox">
-        <!-- show modal loadFromRemote.vue when clicked -->
-        <div class="btn" @click.stop @click="modalData.type='LOAD'; modalData.status=true" @loadData="(data) => { console.log(data); }" >
-            <p>load</p>
-        </div>
-
-        <div class="btn" @click="validate">
-            <p>save</p>
-        </div>
-    </div>
-</div>
-</template>
-
-<script>
-import loadFromRemote from "@/components/loadFromRemote.vue";
-import setAcr from "./setAcr.vue";
-import ArrayInput from "./ArrayInput.vue";
-
-import { cloneDeep } from 'lodash';
-
-const resourceType = {
-    0 : 'Mixed',
-    1: 'ACP',
-    2: 'AE',
-    3: 'CNT',
-    4: 'CIN',
-    5: 'CSE',
-    9: 'GRP',
-    16: 'CSR',
-    23: 'SUB'
-}
-
-const resourceAttributes = {
+export const resourceAttributes = {
     5: {
         rn: {
             type: "text", 
@@ -228,14 +119,14 @@ const resourceAttributes = {
             value: [],
             raw_value: ''
         },
-        'cr': {
-            type: "Boolean", 
-            fullName: "Creator",
-            description: "Choose whether add creator attribute to the resource",
-            required:false, 
-            disable: false, 
-            value: false
-        },
+        // 'cr': {
+        //     type: "Boolean", 
+        //     fullName: "Creator",
+        //     description: "Choose whether add creator attribute to the resource",
+        //     required:false, 
+        //     disable: false, 
+        //     value: false
+        // },
         'pv': {
             type: "ACR", 
             fullName: "Privileges",
@@ -323,6 +214,18 @@ const resourceAttributes = {
                 if(Object.keys(resourceAttributes[resourceType.AE]).indexOf(value) >= 0) return true;
                 return false;
             }
+        },
+        'ast':{
+            type: "Select",
+            fullName: "Announce Sync Type",
+            description: "Set announce sync type",
+            options: {
+                1: 'UNI DIRECTIONAL',
+                2: 'BI DIRECTIONAL'
+            },
+            required:false,
+            disable: false,
+            value: 0
         },
         'lbl': {
             type: "Array", 
@@ -429,6 +332,18 @@ const resourceAttributes = {
                 return false;
             }
         },
+        'ast':{
+            type: "Select",
+            fullName: "Announce Sync Type",
+            description: "Set announce sync type",
+            options: {
+                1: 'UNI DIRECTIONAL',
+                2: 'BI DIRECTIONAL'
+            },
+            required:false,
+            disable: false,
+            value: 0
+        },
         'cr': {
             type: "Boolean", 
             fullName: "Creator",
@@ -491,6 +406,14 @@ const resourceAttributes = {
             disable: false, 
             value: ''
         },
+        'lbl': {
+            type: "Array", 
+            fullName: "Label",
+            description: "The label of the resource",
+            required:false, 
+            disable: false, 
+            value: [],
+        },
         'mt': {
             type: "Select", 
             fullName: "Member Type",
@@ -513,13 +436,122 @@ const resourceAttributes = {
             disable:false, 
             value: 0
         },
+        'acpi': {
+            type: "Array", 
+            fullName: "Access Control Policy IDs",
+            description: "Resource ID or path of ACP resource to control access to this resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'cr': {
+            type: "Boolean", 
+            fullName: "Creator",
+            description: "Choose whether add creator attribute to the resource",
+            required:false, 
+            disable: false, 
+            value: false
+        },
+        'mni': {
+            type: "Number",
+            fullName: "Max Nr of Instances",
+            description: "The maximum number of instances of the resource",
+            required:false,
+            disable: false,
+            value: 0,
+            validation: function (value) { 
+                if(value < 0) return false;
+                return true;
+            }
+        },
+        'mid':{
+            type: "Array",
+            fullName: "Member ID",
+            description: "Set member ID",
+            required:false,
+            disable: false,
+            value: []
+        },
+        'gn':{
+            type: "text",
+            fullName: "Group Name",
+            description: "Set group name",
+            required:false,
+            disable: false,
+            value: ''
+        },
+        'macp':{
+            type: "Array",
+            fullName: "Member ACP",
+            description: "Set member ACP",
+            required:false,
+            disable: false,
+            value: []
+        },
+        'at': {
+            type: "Array",
+            fullName: "announceTo",
+            description: "Set cse to announce this resource. Can be CSE-ID or URL",
+            required:false,
+            disable: false,
+            value: [],
+            validation: function (value) { 
+                if(value[0] == '/') return true;
+                if(value.substring(0, 7) == 'http://') return true;
+                if(value.substring(0, 7) == 'mqtt://') return true;
+                if(value.substring(0, 7) == 'coap://') return true;
+                return false;
+            }
+        },
+        'aa': {
+            type: "Array", 
+            fullName: "Announced Attribute",
+            description: "Attributes to announce",
+            required:false,
+            disable: false,
+            value: [],
+            validation: function (value) { 
+                if(Object.keys(resourceAttributes[resourceType.GRP]).indexOf(value) >= 0) return true;
+                return false;
+            }
+        },
+        'ast':{
+            type: "Select",
+            fullName: "Announce Sync Type",
+            description: "Set announce sync type",
+            options: {
+                1: 'UNI DIRECTIONAL',
+                2: 'BI DIRECTIONAL'
+            },
+            required:false,
+            disable: false,
+            value: 0
+        },
+        'ty': {
+            type: "Number", 
+            fullName: "Resource Type",
+            description: "The resource type of the resource",
+            required:true, 
+            disable: true, 
+            value: 9
+        },
+    },
+    23: {
+        'rn': {
+            type: "text",
+            fullName: "Resource Name",
+            description: "The name of the resource",
+            required:false, 
+            disable: false, 
+            value: ''
+        },
         'lbl': {
             type: "Array", 
             fullName: "Label",
             description: "The label of the resource",
             required:false, 
             disable: false, 
-            value: [],
+            value: []
         },
         'acpi': {
             type: "Array", 
@@ -537,290 +569,70 @@ const resourceAttributes = {
             disable: false, 
             value: false
         },
+        // 'net':{
+        //     type: "Select",
+        //     fullName: "Notification Event Type",
+        //     description: "The notification event type of the resource",
+        //     options: {
+        //         1: 'Update of resource',
+        //         2: 'Delete of resource',
+        //         3: 'Create of Direct Child resource',
+        //         4: 'Delete of Direct Child resource',
+        //         5: 'Retrieve of Container resource with no child resource',
+        //         6: 'Trigger Received For AE Resource',
+        //         7: 'Blocking Update',
+        //         8: 'Report on missing data points'
+        //     },
+        //     required: true,
+        //     disable: false,
+        //     value: 0
+        // },
+        'exc': {
+            type: "Boolean", 
+            fullName: "Expiration Counter",
+            description: "Set whether the resource has expiration counter",
+            required:false, 
+            disable: false, 
+            value: false
+        },
+        'nu': {
+            type: "Array", 
+            fullName: "Notification URI",
+            description: "The notification URI of the resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'su': {
+            type: "Array", 
+            fullName: "Subscriber URI",
+            description: "The Subscriber URI of the resource",
+            required:false, 
+            disable: false, 
+            value: []
+        },
+        'nct': {
+            type: "Select", 
+            fullName: "Notification Content Type",
+            description: "The notification content type of the resource",
+            options: {
+                1: 'All Attributes',
+                2: 'Modified Attributes',
+                3: 'Resource ID',
+                4: 'Trigger_Payload',
+                5: 'TimeSeries notification'
+            }, 
+            required: true, 
+            disable:false, 
+            value: 0
+        },
         'ty': {
             type: "Number", 
             fullName: "Resource Type",
             description: "The resource type of the resource",
             required:true, 
             disable: true, 
-            value: 9
+            value: 23
         },
-    },
-    23: {
-        'rn': {type: "text", required:false, disable: false, value: ''},
-        'ty': {type: "Number", required:true, disable: true, value: 23},
-        'ct': {type: "text", required:false, disable: false, value: ''},
-        'lbl': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'acpi': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'nu': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'nct': {type: "Select", options:{1: 'All Attributes', 2: 'Modified Attributes', 3: 'Resource ID', 4: 'Trigger_Payload', 5: 'TimeSeries notification'}, required: true, disable:false, value: 0},
-        'su': {type: "Array", required:false, disable: false, value: [], raw_value: ''},
-        'enc': {type: "Select", options:{None: 0, Base64: 1}, required: true, disable:false, value: 0},
-
     },
 };
-
-export default {
-    name: "setAttrs",
-    "emits": ["close", "save", "modified"],
-    components:{
-        loadFromRemote,
-        setAcr,
-        ArrayInput
-    },
-    props: {
-        element: {
-            type: Object,
-            required: true,
-        },
-    },
-    data() {
-        return {
-            selectedElement:  {}, 
-            isModified: false,
-            modalData: {
-                status: false,
-                type: '',
-                data: {}
-            }
-        }
-        
-    },
-    beforeMount() {
-        window.addEventListener('beforeunload', () => { this.$emit('close', null); });
-        // this.$emit('close', null);
-    },
-    mounted() {
-        this.selectedElement = cloneDeep(resourceAttributes[this.element.ty]); 
-        Object.entries(this.element.attrs).forEach(([key, value]) => {
-            if(this.selectedElement[key])
-                this.selectedElement[key].value = value;
-        });
-    },
-    computed: {
-    },
-    watch: {
-        isModified: function (val) {
-            console.log("isModified", val);
-            this.$emit('modified', val);
-        }
-        
-    },
-    methods: {
-        validate: function (evt){
-            evt.preventDefault();
-            for (const [key, value] of Object.entries(this.selectedElement)) {
-                if(value.required && value.value === ""){
-                    alert(key + " is required");
-                    return;
-                }
-
-                if(value.validation){
-                    if(value.type === "Array" && value.value.length === 0) continue;
-                    if(value.type === "text" && value.value === "") continue;
-
-                    if(!value.validation(value.value)){
-                        alert(key + " is not valid");
-                        return;
-                    }
-                }
-            }
-            this.$emit('save', this.selectedElement, ()=>{this.isModified = false;});
-            this.isModified = false;
-        },
-        confirmClose(){
-            if(this.isModified){
-                if(confirm("Are you sure to leave without saving?\nAll the changes will be lost.")){
-                    this.$emit('close', null);
-                }
-            }else{
-                this.$emit('close', null);
-            }
-        },
-    }
-}
-
-</script>
-
-<style scoped>
-.attrSetUi {
-    /* overflow-y: auto; */
-}
-
-.modal {
-  position: fixed;
-  display: block;
-  top: 0;
-  left: 0;
-  z-index: 100;
-  width: 100vw;
-  height: 100vh;
-
-}
-
-.modal .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.3);
-}
-
-.modal .modalBody {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 101;
-  width: 70vw;
-  height: auto;
-  background-color: #fff;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  padding: 15px;
-    min-height: 300px;
-}
-
-.titleBox {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 10px;
-
-    border-bottom: #333 1px solid;
-}
-
-.titleBox p {
-    font-size: 25px;
-    font-weight: bold;
-    margin: 0;
-    padding: 0;
-}
-
-.attrBox {
-    overflow-y: auto;
-    max-height: 500px;
-    display: flex;
-    flex-direction: column;
-
-}
-
-.attrBox .attrRow {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin: 0px;
-    padding: 5px;
-    border-bottom: #333 1px solid;
-    /* border-top: #333 1px solid; */
-}
-
-.selectAttr {
-    width: 100%;
-    text-align: left;
-    
-}
-
-.key {
-    text-align: center;
-    font-weight: bold;
-}
-
-.fullName {
-    position: relative;
-}
-
-.fullName .tooltips {
-    /* display: none; */
-    visibility: hidden;
-    position: absolute;
-    background-color: #333;
-    color: #fff;
-    text-wrap: nowrap;
-    top: 100%;
-    left: 50%;
-    margin-left: -60px; /* Use half of the width (120/2 = 60), to center the tooltip */
-    z-index: 1;
-    border-radius: 4px;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-.fullName:hover .tooltips{
-    visibility: visible;
-
-}
-
-.values {
-    text-align: center;
-    overflow: auto;
-}
-
-.values input {
-    width: 100%;
-    padding: 0%;
-    margin: 0%;
-}
-
-.arrayInput {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;  
-    box-sizing: border-box;
-}
-
-.closeBtn {
-    cursor: pointer;
-    padding: 5px;
-}
-
-.buttonBox {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-    width: auto;
-}
-
-.CheckboxInput {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 5px;
-
-}
-
-.CheckboxInput .Checkbox {
-
-    display: flex;
-    flex-direction: row;
-    align-content: center;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-}
-
-.delBtn {
-    background-color: orangered;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;  
-}
-
-.btn {
-    background-color: #333;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;  
-}
-
-.btn p{
-    padding: 0;
-    margin: 0;
-}
-</style>
