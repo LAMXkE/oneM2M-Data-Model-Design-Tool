@@ -30,7 +30,6 @@ async function http_cse_retrieve(originator, host, port, path, callback)
         throw error;
       }
 
-    
 }
 
 export default http_cse_retrieve;

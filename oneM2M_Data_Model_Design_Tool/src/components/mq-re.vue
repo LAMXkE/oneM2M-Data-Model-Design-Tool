@@ -22,12 +22,13 @@ import {get_jsonfile,
   bfs_json,
   make_request_resource,
   attribute_check,
-  readJSONFile } from './json-parser.js'
+  readJSONFile } from './json-parser2.js'
 
 export default{
     name: "mq_re",
     props: {
-      cse1: Object
+      cse1: Object,
+      originator: String
     },
     data(){
      return{
@@ -74,19 +75,21 @@ export default{
         submit() {
             this.resource_req_que = bfs_json(this.cse1)
             this.createConnection(); //통신 연결
-            
+            this.resource_sub_pub_init();
+            this.doSubscribe();
             this.resource_req_que.forEach((resource) => {
-              console.log(resource);
-              this.resource_sub_pub_init(resource);
+              //console.log(resource);
               // 각 resource에 대한 작업 실행
-              this.doSubscribe(); //현재 resource에 대한 요청의 response데이터를 확인하기 위해 구독
-              this.doPublish(); //현재 resource에 대한 요청 
+              this.doPublish(); 
             });
         },
-        resource_sub_pub_init(resource){
+        resource_sub_pub_init(){
+            const recei = this.cse1[0].attrs.rn;
             /* sub init */ 
-            
+            this.subscription.topic = `/oneM2M/resp/${this.originator}/+/#`;
+            console.log(this.subscription.topic)
             /* pub init */ 
+            this.publish.topic = `/oneM2M/req/${this.originator}/${recei}/json`;
         },
         initData() {
             this.client = {

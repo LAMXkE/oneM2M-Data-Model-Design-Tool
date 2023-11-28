@@ -93,10 +93,10 @@
         <div class="btn button" style="background-color: lightblue;" @click="loadFile">
           Load
         </div>
-        <mq_re :cse1="cse1"></mq_re>
+        <mq_re :cse1="cse1" :originator="originator"></mq_re>
       </div>
     </div>
-    <div v-if="attrSetting" class="modal">
+    <div v-if="attrSetting" c lass="modal">
       <div class="overlay"> 
       </div>
       <div class="modalBody">
