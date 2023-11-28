@@ -92,6 +92,7 @@
         <div class="btn button" style="background-color: lightblue;" @click="loadFile">
           Load
         </div>
+        <mq_re :cse1="cse1"></mq_re>
       </div>
     </div>
     <div v-if="attrSetting" class="modal">
@@ -141,6 +142,8 @@ import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
 import { resourceType as RT } from "./components/attributes";
 import get_jsonfile from "@/components/json-parser.js";
+import mq_re from "@/components/mq-re.vue";
+import http_cse_retrieve from "@/components/retrieve_cse.js"
 
 export default {
   name: "App",
@@ -150,7 +153,8 @@ export default {
     navBar,
     draggable,
     nestedDraggable,
-    setAttrs
+    setAttrs,
+    mq_re,
     // rawDisplayer
   },
   data() {
@@ -178,10 +182,15 @@ export default {
       attrSetting : false,
       attrSettingModified: false,
       isDragging: false,
+<<<<<<< HEAD
       selectedElement: {},
       targetIP: ""
     };
 
+=======
+      selectedElement: {}
+    }
+>>>>>>> origin/main
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
@@ -213,6 +222,7 @@ export default {
       const dataToSave = JSON.parse(JSON_string);
       const filename = 'storagedata.json';
       const element = document.createElement('a');
+      console.log("datatosave", dataToSave);
       get_jsonfile(dataToSave);
       //console.log("create finish")
     },
