@@ -409,8 +409,9 @@ export const resourceAttributes = {
             type: "Select", 
             fullName: "Member Type",
             description: "The member type of the resource",
-            options:resourceType, 
-            required: true, 
+            options: Object.fromEntries(Object.entries(resourceType).map(([key, val]) => [val, key])),
+            required: true,
+            dataType: 'Number', 
             disable:false, 
             value: 0
         },
@@ -425,6 +426,7 @@ export const resourceAttributes = {
             }, 
             required: false, 
             disable:false, 
+            dataType: 'Number',
             value: 0
         },
         'acpi': {
@@ -441,6 +443,7 @@ export const resourceAttributes = {
             description: "Choose whether add creator attribute to the resource",
             required:false, 
             disable: false, 
+            dataType: 'Boolean',
             value: false
         },
         'mni': {
@@ -449,6 +452,7 @@ export const resourceAttributes = {
             description: "The maximum number of instances of the resource",
             required:false,
             disable: false,
+            dataType: 'Number',
             value: 0,
             validation: function (value) { 
                 if(value < 0) return false;
@@ -461,6 +465,7 @@ export const resourceAttributes = {
             description: "Set member ID",
             required:false,
             disable: false,
+
             value: []
         },
         'gn':{
@@ -516,6 +521,7 @@ export const resourceAttributes = {
             },
             required:false,
             disable: false,
+            dataType: 'Number',
             value: 0
         },
         'ty': {
