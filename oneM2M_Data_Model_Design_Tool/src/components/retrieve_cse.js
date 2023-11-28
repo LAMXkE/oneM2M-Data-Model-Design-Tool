@@ -2,7 +2,7 @@ import axios from 'axios';
 
 axios.defaults.withCredentials = false;
 
-async function http_cse_retrieve(originator, host, port, path)
+async function http_cse_retrieve(originator, host, port, path, callback)
 {
 
   
@@ -22,12 +22,15 @@ async function http_cse_retrieve(originator, host, port, path)
         });
         console.log(`[CSE data Retrieved]`)
         // console.log(response.data);
-        return response.data;
+        // return response.data;
+        callback(response.data);
       } catch (error) {
         console.log(`[CSE data Retrieve Failed]`)
         //console.log(url);
         throw error;
       }
+
+    
 }
 
 export default http_cse_retrieve;

@@ -298,7 +298,12 @@ export default {
       }
       console.log(protocol, ip, port, path);
       if(protocol === "http"){
-        http_cse_retrieve(this.originator, ip, port, path);
+        const setCSEData = (data) => {
+          console.log(data['m2m:cb']);
+          this.cse1[0].attrs = data['m2m:cb'];
+        };
+        http_cse_retrieve(this.originator, ip, port, path, setCSEData);
+        // console.log(cb);
       }
       else if(protocol === "https"){
         alert("https is not supported yet");
