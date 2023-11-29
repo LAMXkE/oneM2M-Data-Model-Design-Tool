@@ -4,11 +4,16 @@ import {server_info, resource}  from './config.js';
 //import slave from './app.js'
 axios.defaults.withCredentials = false;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function select_resource(attr)
 {
   const attr_list = {
     "header" : {},
-    "body" : {}
+    "body" : {},
+    "type" : ""
   };
 
   const ae_header = ["ty"];
@@ -21,22 +26,27 @@ async function select_resource(attr)
   if (attr["ty"] == 1)
   {
     attribute_list = acp_header;
+    attr_list["type"] = "acp";
   }
   else if (attr["ty"] == 2)
   {
     attribute_list = ae_header;
+    attr_list["type"] = "ae";
   }
   else if (attr["ty"] == 3)
   {
     attribute_list = cnt_header;
+    attr_list["type"] = "cnt";
   }
   else if (attr["ty"] == 9)
   {
     attribute_list = grp_header;
+    attr_list["type"] = "grp";
   }
   else
   {
     attribute_list = sub_header;
+    attr_list["type"] = "sub";
   }
 
   // console.log("att list check");
@@ -55,7 +65,7 @@ async function select_resource(attr)
       }
     }
   }
-  console.log("!",attr_list);
+  // console.log("!",attr_list);
   return attr_list;
 }
 
@@ -63,41 +73,68 @@ async function select_resource(attr)
 /*
 
 */
-async function create_resource(attr)
+async function create_resource(attr, path, targetIP)
 { 
-    console.log("hello im free");
-    const url = `http://${server_info["url"]}`//:${server_info["port"]}`;
+  // console.log(path);
+  // console.log("create_resource : ", targetIP); 
+  let result = path.replace(/\/[^/]*$/, '');
+  // console.log("path : ", result);
+    // console.log("hello im free");
+     const url = `${targetIP}${result}`;
     console.log(url);
     var attrs = {};
 
     attrs = await select_resource(attr);
-    console.log("------");
-    console.log(select_resource(attr));
-    console.log("------");
+    var now_type = attrs["type"];
+    // var resource_type = `m2m:${now_type}`;
+    // console.log("------");
+    // console.log(select_resource(attr));
+    // console.log("------");
  
   
     const headers = {
-        'X-M2M-Origin': "tool_id", //tool에서 설정해야됨
+        'X-M2M-Origin': `C-Originator`, //tool에서 설정해야됨
         'Content-Type': `application/json;ty=${attrs["header"]["ty"]}`,
         // 'Cache-Control': 'no-cache',
         // 'Access-Control-Allow-Origin' : '*',
     }
 
-    const body_attr = {
-      "m2m:ae" : attrs["body"]
-    } 
+    var body_attr = {}
+    if (now_type == "acp")
+    {
+      body_attr = {"m2m:acp" : attrs["body"]}
+    }
+    else if (now_type == "ae")
+    {
+      body_attr = {"m2m:ae" : attrs["body"]}
+    }
+    else if (now_type == "cnt")
+    {
+      body_attr = {"m2m:cnt" : attrs["body"]}
+    }
+    else if (now_type == "grp")
+    {
+      body_attr = {"m2m:grp" : attrs["body"]}
+    }
+    else
+    {
+      body_attr = {"m2m:sub" : attrs["body"]}
+    }
+    console.log("body attrs", body_attr);
 
-    const body = attrs["body"];
-    
+    await sleep(1000);
+
     try {
         const response = await axios.post(url, body_attr, {
           headers: headers,
           withCredentials: false,
         });
-        console.log(`[AE created]`)
+        console.log(`[${now_type} created]`);
+        console.log(response.data);
         return response.data;
       } catch (error) {
-        console.log(`[AE creation failed]`)
+        console.log(`[${now_type} creation failed]`);
+        console.log(error);
         //console.log(url);
         throw error;
       }

@@ -1,8 +1,9 @@
 export const server_info = {
-    url : "sampleurl",
-    port : 1234,
-    cse_id : "cse-id",
-    cse_name : "cse-name"
+    url : "no_more_use",
+    port : 3000,
+    cse_id : "tinyiot",
+    cse_name : "TinyIoT", 
+    protocol : ""
 }
 
 export const resource = {

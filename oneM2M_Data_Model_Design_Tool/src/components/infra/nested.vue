@@ -10,13 +10,13 @@
       :move="validateMove"
     >
       <template #item="{ element }">
-        <li class="resourceBox" @click.stop @click="this.clickMethod(element)">
+        <li class="resourceBox" @click.stop @click="$emit('clicked', element)">
           <p :class="{ selected: element.selected }">{{ element.name }}</p>
           <nested-draggable 
             v-if="element.tasks && getChildRT(element.ty).length > 0" 
             :tasks="element.tasks" 
             :group="this.group"
-            :clickMethod="this.clickMethod"
+            @clicked="(element) => { $emit('clicked', element) }"
             :childRT="getChildRT(element.ty)"
             />
         </li>

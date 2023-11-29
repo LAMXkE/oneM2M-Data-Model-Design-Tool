@@ -2,6 +2,19 @@
   <header>
     <navBar class="nav" />
   </header>
+  <div class="configure">
+    <div class="box">
+      <div class="key">Originator</div>
+      <input type="text" v-model="originator" />
+    </div>
+    <div class="box">
+      <div class="key">CSE IP address</div>
+      <input type="text" v-model="targetIP" placeholder="http://127.0.0.1:3000/TinyIoT" />
+    </div>
+    <div>
+        <div class="btn button" @click="loadFromRemoteCSE">Load</div>
+    </div>
+  </div>
   <div class="body">
     <div class="canvas">
         <nestedDraggable 
@@ -14,7 +27,9 @@
                   }"
           :min-height="200"
           item-key="id"
-          :clickMethod="setAttributes"
+          @clicked="(element) => { 
+            this.setAttributes(element); 
+          }"
           @move="(evt) => { this.isDragging = true; }"
           :dragoverBubble="true"
           class="dragArea resourceTree"
@@ -35,6 +50,12 @@
               item-key="id"
               @change="(evt) => { 
                 this.isDragging = false; 
+                // console.log(evt);
+                if(this.selectedElement)
+                  this.selectedElement.selected=false; 
+                this.selectedElement = undefined; 
+                this.attrSettingModified = false;
+
                 return evt;
               }"
               >
@@ -72,6 +93,7 @@
         <div class="btn button" style="background-color: lightblue;" @click="loadFile">
           Load
         </div>
+        <mq_re :cse1="cse1"></mq_re>
       </div>
     </div>
     <div v-if="attrSetting" class="modal">
@@ -97,10 +119,15 @@
           if(value.value == 0){
             return;
           }
-          
-          if(value.type == 'Number' && parseInt(value.value) != NaN && parseInt(value.value) != 0){
-            this.selectedElement.attrs[key] = parseInt(value.value);
-          }else{
+          if(value.dataType === 'Number'){
+            if(parseInt(value.value) != NaN && parseInt(value.value) != 0){
+              this.selectedElement.attrs[key] = parseInt(value.value);
+            }
+            else{
+              this.selectedElement.attrs[key] = value.value;
+            }
+          }
+          else{
             this.selectedElement.attrs[key] = value.value;
           }
           callback();
@@ -112,8 +139,6 @@
       
   </div>
   <rawDisplayer class="col-4" :value="cse1" title="List 1" />
-
-  <rawDisplayer class="col-4" :value="resources" title="List 2" />
 </template>
 
 <script>
@@ -121,7 +146,10 @@ import draggable from "vuedraggable";
 import nestedDraggable from "@/components/infra/nested.vue";
 import setAttrs from "@/components/setAttrs.vue";
 import navBar from "@/components/navBar.vue";
+import { resourceType as RT } from "./components/attributes";
 import get_jsonfile from "@/components/json-parser.js";
+import mq_re from "@/components/mq-re.vue";
+import http_cse_retrieve from "@/components/retrieve_cse.js"
 
 const RT_MIXED = 0;
 const RT_ACP = 1;
@@ -147,7 +175,8 @@ export default {
     navBar,
     draggable,
     nestedDraggable,
-    setAttrs
+    setAttrs,
+    mq_re,
     // rawDisplayer
   },
   data() {
@@ -155,7 +184,7 @@ export default {
       cse1: [
       {
           name: "CSE1",
-          ty: RT_CSE,
+          ty: RT.CSE,
           tasks: [
           ],
           attrs:{
@@ -164,30 +193,29 @@ export default {
         }
       ],
       resources: [
-          { name: "AE", ty: RT_AE },
-          { name: "CNT", ty: RT_CNT },
-          { name: "ACP", ty: RT_ACP },
-          { name: "GRP", ty: RT_GRP },
-          { name: "SUB", ty: RT_SUB },
+          { name: "AE", ty: RT.AE },
+          { name: "CNT", ty: RT.CNT },
+          { name: "ACP", ty: RT.ACP },
+          { name: "GRP", ty: RT.GRP },
+          { name: "SUB", ty: RT.SUB },
           // { name: "FCNT", ty: RT_FCNT },
       ]
       ,
       attrSetting : false,
       attrSettingModified: false,
       isDragging: false,
-      selectedElement: {}
-    };
-
+      selectedElement: {},
+      targetIP: "",
+      originator: "Cae-test-1"
+    }
   },
   created(){
     const cse = JSON.parse(sessionStorage.getItem("CSE1"));
     //get_jsonfile(cse);
     if (cse!=undefined) this.cse1 = cse;
+    this.targetIP = sessionStorage.getItem('targetIP');
   },
   methods: {
-    log: function(evt) {
-      // window.console.log(evt);
-    },  
     saveResourceTree(){
       console.log("saveResourceTree");
       this.exportTextFile();
@@ -197,8 +225,6 @@ export default {
       this.create_oneM2M_resource();
      // console.log("create finish");
     },
-    
-
     setAttributes(element){
       this.selectedElement = element;
       this.attrSettingModified = false;
@@ -211,7 +237,10 @@ export default {
       const dataToSave = JSON.parse(JSON_string);
       const filename = 'storagedata.json';
       const element = document.createElement('a');
-      get_jsonfile(dataToSave);
+      // console.log("datatosave", dataToSave);
+      // console.log("targetIP : ", this.targetIP);
+      const target_IP = this.targetIP;
+      get_jsonfile(dataToSave, target_IP);
       //console.log("create finish")
     },
     exportTextFile() {
@@ -245,6 +274,45 @@ export default {
         }
       };
       fileInput.click();
+    },
+    loadFromRemoteCSE(){
+      console.log("loadFromRemoteCSE");
+      console.log(this.targetIP);
+      sessionStorage.setItem('targetIP', this.targetIP);
+      if(this.targetIP === ""){
+        alert("Please input CSE IP address");
+        return;
+      }
+      const url = this.targetIP;
+      const protocol = url.split(':')[0];
+      var ip = "";
+      var port = "";
+      var path = "";
+      if(url.split(':').length == 3){
+        ip = url.split(':')[1].replace('//','');
+        port = url.split(':')[2].split('/')[0];
+        path = url.split(':')[2].split('/').slice(1).join('/');
+      }
+      else{
+        ip = url.split(':')[1].replace('//','');
+        port = "80";
+        path = url.split(':')[1].split('/').slice(1).join('/');
+      }
+      console.log(protocol, ip, port, path);
+      if(protocol === "http"){
+        const setCSEData = (data) => {
+          console.log(data['m2m:cb']);
+          this.cse1[0].attrs = data['m2m:cb'];
+        };
+        http_cse_retrieve(this.originator, ip, port, path, setCSEData);
+        // console.log(cb);
+      }
+      else if(protocol === "https"){
+        alert("https is not supported yet");
+      }
+      else{
+        alert("Please input correct protocol");
+      }
     },
     loadFromSessionStorage() {
       const data = sessionStorage.getItem('CSE1');
@@ -318,7 +386,7 @@ export default {
           }
         }
         const attribute = task.attrs;
-        if(task.ty == RT_ACP){ /* ACP */
+        if(task.ty == RT_AE){ /* AE */
           if(
             (typeof attribute.pv == "undefined" || typeof attribute.pvs == "undefined" || attribute.ty !== RT_ACP) ||                         // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
@@ -373,7 +441,7 @@ export default {
             }
           }
         }
-        else if(task.ty == RT_CNT){ /* CNT */
+        if(task.ty == RT_CNT){ /* CNT */
           if(
             (attribute.ty !== RT_CNT) ||                                                                                                      // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -390,7 +458,7 @@ export default {
             return false;
           }
         }        
-        else if(task.ty == RT_SUB){ /* SUB */
+        if(task.ty == RT_SUB){ /* SUB */
           if(
             (typeof attribute.nu == "undefined" || attribute.ty !== RT_SUB) ||                                                                // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -406,7 +474,7 @@ export default {
             return false;
           }
         }
-        else if(task.ty == RT_GRP){ /* GRP */
+        if(task.ty == RT_GRP){ /* GRP */
           if(
             (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined" || attribute.ty !== RT_GRP) ||                        // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -462,6 +530,42 @@ export default {
   overflow: hidden;
 }
 
+.configure {
+  display: flex;
+  flex-direction: row;
+  /* justify-content: space-between; */
+  align-items: flex-start;
+  margin-left: 10px;
+  margin-right: 10px;
+  min-width: 1200px;
+  overflow: hidden;
+
+}
+.configure .box {
+  border: 1px solid black;
+  padding: 5px;
+  margin-left: 10px;
+  margin-right: 10px;
+  background-color: #eee;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  min-height: 20px;
+}
+
+.configure .box .key {
+  width: 200px;
+  text-align: center;
+}
+
+.configure .box input {
+  flex-grow: 1;
+  border-radius: 5px;
+  padding: 5px;
+  width: 100%;
+}
+
 .body {
   display: flex;
   flex-direction: row;
@@ -500,6 +604,7 @@ export default {
   margin-bottom: 15px;
   min-width: 1200px;
   overflow: hidden;
+  margin-right: 0px;
 }
 
 .dragArea {

@@ -10,7 +10,7 @@
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title">Load from Remote Server</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
             </div>
@@ -45,6 +45,7 @@ export default {
         return {
             protocol: 'http',
             url: ''
+            
         }
     },
     methods: {
@@ -54,8 +55,9 @@ export default {
     },
     watch:{
         showModal: function(val){
-            console.log(val)
+            console.log(val);
             if(val){
+                // console.log(document.getElementById('remoteLoadModal'));
                 document.getElementById('remoteLoadModal').show();
             }else{
                 document.getElementById('remoteLoadModal').modal('fade');
