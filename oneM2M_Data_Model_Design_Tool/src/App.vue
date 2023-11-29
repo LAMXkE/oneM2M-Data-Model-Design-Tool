@@ -127,7 +127,7 @@ const RT_MIXED = 0;
 const RT_ACP = 1;
 const RT_AE = 2;
 const RT_CNT = 3;
-const RT_CIS = 4;
+const RT_CIN = 4;
 const RT_CSE = 5;
 const RT_FCNT = 7;
 const RT_TS = 8;
@@ -268,12 +268,47 @@ export default {
         'GRP': ['SUB'],
         'ACP': ['SUB'],
       };
-      const typeNum = [RT_MIXED, RT_ACP, RT_AE, RT_CNT, RT_CIS, RT_CSE, RT_GRP, RT_CSR, RT_SUB];                                              // TinyIoT Resource Type
+      const typeNum = [RT_MIXED, RT_ACP, RT_AE, RT_CNT, RT_CIN, RT_CSE, RT_GRP, RT_CSR, RT_SUB];                                              // TinyIoT Resource Type
+      
+      const resourceType = ['ACP', 'AE', 'CNT', 'CIN', 'CSE', 'GRP', 'CSR', 'SUB'];                                                           // Resource Type
+      const serializations = ['application/json', 'application/xml', 'application/cbor'];                                                     // Serialization Type
 
       // const announceSyncType = ['UNI_DIRECTIONAL', 'BI_DIRECTIONAL'];
       // const notificationEventCat = ['Immediate', 'BestEffort', 'Latest'];
       // const notificationContentType = ['All_Attributes', 'Modified_Attributes', 'ResourceID', 'Trigger_Payload', 'TimeSeries_notification'];
       // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
+
+      const attributeCSE = data.attrs;
+      if(data.ty == RT_CSE) { /* CSE */
+        if(
+          (attributeCSE.ty !== RT_CSE) ||                                                                                                     // Mandatory Attribute
+          (typeof attributeCSE.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attributeCSE.rn)) ||                                          // resourceName
+          (typeof attributeCSE.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attributeCSE.lbl)) ||                                           // labels
+          (typeof attributeCSE.acpi !== "undefined" && typeof attributeCSE.acpi !== 'string') ||                                              // accessControlPolicyIDs
+          (typeof attributeCSE.cst == "undefined" && (attributeCSE.cst < 1 || attributeCSE.cst > 3)) ||                                       // cseType
+          (typeof attributeCSE.csi !== "undefined" && typeof attributeCSE.csi !== 'string') ||                                                // CSE-ID
+          (typeof attributeCSE.poa !== "undefined" && typeof attributeCSE.poa !== 'string')                                                   // pointOfAccess
+        ){
+          alert("Invalid Loading(CSE)");
+          return false;
+        }
+        if (Array.isArray(attributeCSE.srt)) {                                                                                                // supportedResourceType                                                                                                   
+          for (let i = 0; i < attributeCSE.srt.length; i++) {
+            if (!resourceType.includes(attributeCSE.srt[i])) {
+              alert("Invalid Loading(CSE)");
+              return false;
+            }
+          }
+        }
+        if (Array.isArray(attributeCSE.csz)) {                                                                                                // supportedResourceType                                                                                                   
+          for (let i = 0; i < attributeCSE.csz.length; i++) {
+            if (!serializations.includes(attributeCSE.csz[i])) {
+              alert("Invalid Loading(CSE)");
+              return false;
+            }
+          }
+        }
+      }
 
       for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
         if (Array.isArray(task.tasks)) { /* childResource */
