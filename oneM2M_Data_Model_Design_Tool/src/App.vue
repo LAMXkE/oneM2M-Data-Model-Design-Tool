@@ -151,18 +151,20 @@ import get_jsonfile from "@/components/json-parser.js";
 import mq_re from "@/components/mq-re.vue";
 import http_cse_retrieve from "@/components/retrieve_cse.js"
 
-const RT_CSE = 5;
+const RT_MIXED = 0;
 const RT_ACP = 1;
 const RT_AE = 2;
 const RT_CNT = 3;
-const RT_GRP = 9;
-const RT_SUB = 23;
+const RT_CIN = 4;
+const RT_CSE = 5;
 const RT_FCNT = 7;
 const RT_TS = 8;
-const RT_TSI = 9;
+const RT_GRP = 9;
 const RT_TSR = 10;
 const RT_MGMTOBJ = 11;
 const RT_NODE = 14;
+const RT_CSR = 16;
+const RT_SUB = 23;
 
 
 export default {
@@ -332,38 +334,105 @@ export default {
         'CNT': ['SUB', 'CNT'],
         'SUB': [],
         'GRP': ['SUB'],
+        'ACP': ['SUB'],
       };
+      const typeNum = [RT_MIXED, RT_ACP, RT_AE, RT_CNT, RT_CIN, RT_CSE, RT_GRP, RT_CSR, RT_SUB];                                              // TinyIoT Resource Type
+      
+      const resourceType = ['ACP', 'AE', 'CNT', 'CIN', 'CSE', 'GRP', 'CSR', 'SUB'];                                                           // Resource Type
+      const serializations = ['application/json', 'application/xml', 'application/cbor'];                                                     // Serialization Type
+
       // const announceSyncType = ['UNI_DIRECTIONAL', 'BI_DIRECTIONAL'];
       // const notificationEventCat = ['Immediate', 'BestEffort', 'Latest'];
       // const notificationContentType = ['All_Attributes', 'Modified_Attributes', 'ResourceID', 'Trigger_Payload', 'TimeSeries_notification'];
       // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
 
+      const attributeCSE = data.attrs;
+      if(data.ty == RT_CSE) { /* CSE */
+        if(
+          (attributeCSE.ty !== RT_CSE) ||                                                                                                     // Mandatory Attribute
+          (typeof attributeCSE.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attributeCSE.rn)) ||                                          // resourceName
+          (typeof attributeCSE.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attributeCSE.lbl)) ||                                           // labels
+          (typeof attributeCSE.acpi !== "undefined" && typeof attributeCSE.acpi !== 'string') ||                                              // accessControlPolicyIDs
+          (typeof attributeCSE.cst == "undefined" && (attributeCSE.cst < 1 || attributeCSE.cst > 3)) ||                                       // cseType
+          (typeof attributeCSE.csi !== "undefined" && typeof attributeCSE.csi !== 'string') ||                                                // CSE-ID
+          (typeof attributeCSE.poa !== "undefined" && typeof attributeCSE.poa !== 'string')                                                   // pointOfAccess
+        ){
+          alert("Invalid Loading(CSE)");
+          return false;
+        }
+        if (Array.isArray(attributeCSE.srt)) {                                                                                                // supportedResourceType                                                                                                   
+          for (let i = 0; i < attributeCSE.srt.length; i++) {
+            if (!resourceType.includes(attributeCSE.srt[i])) {
+              alert("Invalid Loading(CSE)");
+              return false;
+            }
+          }
+        }
+        if (Array.isArray(attributeCSE.csz)) {                                                                                                // supportedResourceType                                                                                                   
+          for (let i = 0; i < attributeCSE.csz.length; i++) {
+            if (!serializations.includes(attributeCSE.csz[i])) {
+              alert("Invalid Loading(CSE)");
+              return false;
+            }
+          }
+        }
+      }
+
       for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
-        if (Array.isArray(task.tasks)) { 
+        if (Array.isArray(task.tasks)) { /* childResource */
           if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
             alert("Invalid ChildResource(AE)"); 
             return false;
           }
         }
         const attribute = task.attrs;
-        if(task.ty == RT.AE){ /* AE */
+        if(task.ty == RT_AE){ /* AE */
           if(
-            (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || typeof attribute.srv == "undefined") ||             // Mandatory Attribute
+            (typeof attribute.pv == "undefined" || typeof attribute.pvs == "undefined" || attribute.ty !== RT_ACP) ||                         // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
-            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
-            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
-            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
-            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
-            (typeof attribute.api !== "undefined" && (typeof attribute.api !== 'string' || !attribute.api.startsWith('N'))) ||                // App-ID
-            (typeof attribute.aei !== "undefined" && typeof attribute.aei !== 'string') ||                                                    // AE-ID
-            (typeof attribute.rr == "undefined" && typeof attribute.rr !== 'boolean') ||                                                      // requestReachability
-            (typeof attribute.poa !== "undefined" && typeof attribute.poa !== 'string')                                                       // pointOfAccess
+            (typeof attribute.pv.acop == "undefined" && (attribute.pv.acop < 1 || attribute.pv.acop > 6)) ||                                  // privileges accessControlOperations
+            (typeof attribute.pvs.acop == "undefined" && (attribute.pvs.acop < 1 || attribute.pvs.acop > 6))                                  // selfPrivileges accessControlOperations
+            ){ 
+              alert("Invalid Loading(ACP)");
+              return false;
+          }
+          if (Array.isArray(attribute.pv.acor)) {                                                                                             // privileges accessControlOriginators
+            for (let i = 0; i < attribute.pv.acor.length; i++) {
+              if (typeof attribute.pv.acor[i] !== 'string') {
+                alert("Invalid Loading(ACP)");
+                return false;
+              }
+            }
+          }
+          if (Array.isArray(attribute.pvs.acor)) {                                                                                            // selfPrivileges accessControlOriginators
+            for (let i = 0; i < attribute.pv.acor.length; i++) {
+              if (typeof attribute.pv.acor[i] !== 'string') {
+                alert("Invalid Loading(ACP)");
+                return false;
+              }
+            }
+          }
+        }
+        else if(task.ty == RT_AE){ /* AE */
+          if(
+            (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || attribute.srv == "undefined" || attribute.ty !== RT_AE) ||             // Mandatory Attribute
+            (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                                                 // resourceName
+            (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                                                  // labels
+            (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                                     // accessControlPolicyIDs
+            (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                                         // announceTo
+            (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                                         // announcedAttribute
+            (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                                                // announceSyncType            
+            (typeof attribute.apn !== "undefined" && typeof attribute.apn !== 'string') ||                                                                       // appName
+            (typeof attribute.api !== "undefined" && (typeof attribute.api !== 'string' || !attribute.api.startsWith('N'))) ||                                   // App-ID
+            (typeof attribute.aei !== "undefined" && typeof attribute.aei !== 'string') ||                                                                       // AE-ID
+            (typeof attribute.rr == "undefined" && typeof attribute.rr !== 'boolean') ||                                                                         // requestReachability
+            (typeof attribute.poa !== "undefined" && typeof attribute.poa !== 'string')                                                                          // pointOfAccess
             ){ 
             alert("Invalid Loading(AE)");
             return false;
           }
-          if (Array.isArray(attribute.srv)) {                                                                                                 // supportedReleaseVersions
+          if (Array.isArray(attribute.srv)) {                                                                                                                    // supportedReleaseVersions
             for (let i = 0; i < attribute.srv.length; i++) {
               if (!['1','2','2a','3','4','5'].includes(attribute.srv[i])) {
                 alert("Invalid Loading(AE)");
@@ -372,14 +441,15 @@ export default {
             }
           }
         }
-        if(task.ty == RT.CNT){ /* CNT */
+        if(task.ty == RT_CNT){ /* CNT */
           if(
+            (attribute.ty !== RT_CNT) ||                                                                                                      // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
             (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
             (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
-            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'boolean') ||                                                     // creator
             (typeof attribute.mni !== "undefined" && (!Number.isInteger(attribute.mni) || attribute.mni < 0)) ||                              // maxNrOfInstances
             (typeof attribute.mbs !== "undefined" && (!Number.isInteger(attribute.mbs) || attribute.mbs < 0)) ||                              // maxByteSize
             (typeof attribute.mia !== "undefined" && (!Number.isInteger(attribute.mia) || attribute.mia < 0))                                 // maxInstanceAge
@@ -388,12 +458,12 @@ export default {
             return false;
           }
         }        
-        if(task.ty == RT.SUB){ /* SUB */
+        if(task.ty == RT_SUB){ /* SUB */
           if(
-            (typeof attribute.nu == "undefined") ||                                                                                           // Mandatory Attribute
+            (typeof attribute.nu == "undefined" || attribute.ty !== RT_SUB) ||                                                                // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
-            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'boolean') ||                                                     // creator
             (typeof attribute.nu !== "undefined" && typeof attribute.nu !== 'string') ||                                                      // notificationURI
             (typeof attribute.su !== "undefined" && typeof attribute.su !== 'string') ||                                                      // subscriberURI
             (typeof attribute.nec !== "undefined" && (attribute.nec < 2 || attribute.nec > 4)) ||                                             // notificationEventCat
@@ -404,22 +474,25 @@ export default {
             return false;
           }
         }
-        if(task.ty == RT.GRP){ /* GRP */
+        if(task.ty == RT_GRP){ /* GRP */
           if(
-            (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined") ||                                                   // Mandatory Attribute
+            (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined" || attribute.ty !== RT_GRP) ||                        // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
             (typeof attribute.aa !== "undefined" && (typeof attribute.aa !== 'string' || attribute.aa.includes(':'))) ||                      // announcedAttribute
             (typeof attribute.ast !== "undefined" && (attribute.ast < 1 || attribute.ast > 2)) ||                                             // announceSyncType            
-            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'string') ||                                                      // creator
+            (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'boolean') ||                                                     // creator
             (typeof attribute.mnm !== "undefined" && (!Number.isInteger(attribute.mnm) || attribute.mnm <= 0)) ||                             // maxNrOfMembers
             (typeof attribute.mid !== "undefined" && typeof attribute.mid !== 'string') ||                                                    // memberIDs
-            (typeof attribute.mt !== "undefined" && (attribute.mt < 0 || attribute.mt > 38)) ||                                               // memberType
             (typeof attribute.csy !== "undefined" && (attribute.csy < 1 || attribute.csy > 3)) ||                                             // consistencyStrategy
             (typeof attribute.gn !== "undefined" && typeof attribute.gn !== 'string')                                                         // groupName 
             ){ 
             alert("Invalid Loading(GRP)");
+            return false;
+          }
+          if (typeof attribute.mt !== "undefined" && !typeNum.includes(attribute.mt)) {                                                       // memberType
+            alert("Invalid Syntax(AE)");
             return false;
           }
           if (Array.isArray(attribute.macp)) {                                                                                                // membersAccessControlPolicyIDs
@@ -431,6 +504,9 @@ export default {
             }
           }
         }
+        else /* Invalid Resource Type */
+          return false; 
+
         if(!this.checkData(task)) {
           return false;
         }
