@@ -60,10 +60,10 @@
                         </ArrayInput>
                     </div>
                     <div v-if="content.type=='Checkbox'" class="CheckboxInput">
-                        <div v-for="option, idx in content.options" class="Checkbox" :key="idx">
-                            <input type="checkbox" v-model="content.value" :key="idx" :value="option" @input="isModified=true">
+                        <div v-for="option, optkey in content.options" class="Checkbox" :key="optkey">
+                            <input type="checkbox" v-model="content.value" :key="idx" :value="optkey" @input="isModified=true">
                             <span>
-                                {{ option }}
+                                {{ option }} 
                             </span>
                         </div>
                     </div>

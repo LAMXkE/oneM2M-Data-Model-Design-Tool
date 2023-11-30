@@ -12,7 +12,7 @@
       <template #item="{ element }">
         <li :class="{resourceBox: true, nestTree:this.nestTree}" @click.stop @click="$emit('clicked', element)">
           <div class="nestedBox">
-              <span :class="{ horizontalLine: this.nestTree}"></span>
+              <span v-if="this.nestTree" class="horizontalLine"></span>
               <p :class="{ selected: element.selected }">{{ element.name }}</p>
           </div>
           <nested-draggable 
@@ -147,6 +147,7 @@
   <style scoped>
    .dragArea {
     min-height: 20px;
+    width: 100%;
     /* outline: 1px dashed; */
   } 
   .resources .resourceBox .dragArea {
@@ -176,7 +177,6 @@ font-size: 20px;
 font-weight: 400;
 line-height: 1.0;
 text-align: center;
-width: 120px;
 }
   .resourceBox {
     list-style-type: none;

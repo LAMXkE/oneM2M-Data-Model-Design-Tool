@@ -62,7 +62,7 @@ export const resourceAttributes = {
             type: "Checkbox",
             fullName: "Supported Resource Type",
             description: "The supported resource type of the resource",
-            options: Object.entries(resourceType).filter(([key, value]) => {return key != 0}).map(([key, value]) => {return value}),
+            options: Object.fromEntries(Object.entries(resourceType).filter((key, value) => {return value != 0}).map(([key, value]) => {return [value, key]}) ),
             required:false,
             disable: false,
             value: []

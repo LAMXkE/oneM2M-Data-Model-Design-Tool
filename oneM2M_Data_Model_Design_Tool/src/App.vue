@@ -151,20 +151,6 @@ import get_jsonfile from "@/components/json-parser.js";
 import mq_re from "@/components/mq-re.vue";
 import http_cse_retrieve from "@/components/retrieve_cse.js"
 
-const RT_CSE = 5;
-const RT_ACP = 1;
-const RT_AE = 2;
-const RT_CNT = 3;
-const RT_GRP = 9;
-const RT_SUB = 23;
-const RT_FCNT = 7;
-const RT_TS = 8;
-const RT_TSI = 9;
-const RT_TSR = 10;
-const RT_MGMTOBJ = 11;
-const RT_NODE = 14;
-
-
 export default {
   name: "App",
   display: "app",
