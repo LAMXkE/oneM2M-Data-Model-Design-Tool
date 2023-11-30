@@ -10,14 +10,18 @@
       :move="validateMove"
     >
       <template #item="{ element }">
-        <li class="resourceBox" @click.stop @click="$emit('clicked', element)">
-          <p :class="{ selected: element.selected }">{{ element.name }}</p>
+        <li :class="{resourceBox: true, nestTree:this.nestTree}" @click.stop @click="$emit('clicked', element)">
+          <div class="nestedBox">
+              <span :class="{ horizontalLine: this.nestTree}"></span>
+              <p :class="{ selected: element.selected }">{{ element.name }}</p>
+          </div>
           <nested-draggable 
             v-if="element.tasks && getChildRT(element.ty).length > 0" 
             :tasks="element.tasks" 
             :group="this.group"
             @clicked="(element) => { $emit('clicked', element) }"
             :childRT="getChildRT(element.ty)"
+            :nestTree="true"
             />
         </li>
       </template>
@@ -71,6 +75,11 @@
         required: false,
         type: Function,
         default: () => {}
+      },
+      nestTree: {
+        required: false,
+        type: Boolean,
+        default: false
       }
     },
     components: {
@@ -143,10 +152,40 @@
   .resources .resourceBox .dragArea {
   padding-left: 0px;
   min-height: 0px !important;
-  outline: 0px !important;
+   outline: 0px !important;
+}
+
+.horizontalLine {
+  border-top: 2px solid black;
+  width: 20px;
+  height: 0px;
+  display: inline-block;
+}
+.nestedBox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 0px;
+}
+
+.dragArea li {
+list-style-type: none;
+margin: 0px;
+padding: 0px;
+font-size: 20px;
+font-weight: 400;
+line-height: 1.0;
+text-align: center;
+width: 120px;
 }
   .resourceBox {
     list-style-type: none;
+  }
+
+  .nestTree {
+    border-left: 2px solid black;
+    margin-left: 30px !important; 
+    padding-top: 20px !important;
   }
 
   .selected {
@@ -173,7 +212,7 @@
     text-align: center;
     width: 150px;
     min-height: 40px;
-    margin: 10px;
+    margin-bottom: 0px;
 
   }
 
