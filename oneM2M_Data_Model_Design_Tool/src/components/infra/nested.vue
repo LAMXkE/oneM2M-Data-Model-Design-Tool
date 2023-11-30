@@ -10,10 +10,10 @@
       :move="validateMove"
     >
       <template #item="{ element }">
-        <li :class="{resourceBox: true, nestTree:this.nestTree}" @click.stop @click="$emit('clicked', element)">
+        <li :class="{resourceBox: true, nestTree:this.nestTree}" >
           <div class="nestedBox">
               <span v-if="this.nestTree" class="horizontalLine"></span>
-              <p :class="{ selected: element.selected }">{{ element.name }}</p>
+              <p :class="{ selected: element.selected }" @click.stop @click="$emit('clicked', element)">{{ element.name }}</p>
           </div>
           <nested-draggable 
             v-if="element.tasks && getChildRT(element.ty).length > 0" 
@@ -189,16 +189,7 @@ text-align: center;
   }
 
   .selected {
-    background-color: #ccc;
     border: 2px solid orange !important;
-    border-radius: 5px;
-    margin: 5px;
-    padding: 5px;
-    font-size: 20px;
-    font-weight: 400;
-    line-height: 1.0;
-    text-align: center;
-    width: 120px;
   }
   .resourceBox p{
     outline: 1px;
