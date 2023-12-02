@@ -119,11 +119,11 @@ export function bfs_json(jsonData, targetIP) {
     {
       if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) 
       {
-        if (currentNode.hasOwnProperty("id")) 
-        {
+        // if (currentNode.hasOwnProperty("id")) 
+        // {
           rn_list = parentRn + "/" + currentNode.attrs.rn; // 부모 노드 정보와 현재 노드의 rn 조합
           // console.log(rn_list);
-        }
+        // }
         resource_req_que.push(make_request_resource(currentNode, rn_list, targetIP)); // 부모 노드 정보 전달
       }
 

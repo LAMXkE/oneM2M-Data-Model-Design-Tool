@@ -10,6 +10,7 @@ function sleep(ms) {
 
 async function select_resource(attr)
 {
+  // console.log(attr);
   const attr_list = {
     "header" : {},
     "body" : {},
@@ -69,19 +70,16 @@ async function select_resource(attr)
   return attr_list;
 }
 
-
-/*
-
-*/
 async function create_resource(attr, path, targetIP)
 { 
   // console.log(path);
   // console.log("create_resource : ", targetIP); 
+  targetIP = targetIP.replace(/\/[^/]*$/, ''); 
   let result = path.replace(/\/[^/]*$/, '');
   // console.log("path : ", result);
     // console.log("hello im free");
-     const url = `${targetIP}${result}`;
-    console.log(url);
+    const url = `${targetIP}${result}`;
+    console.log("now request url", url);
     var attrs = {};
 
     attrs = await select_resource(attr);
@@ -93,10 +91,13 @@ async function create_resource(attr, path, targetIP)
  
   
     const headers = {
-        'X-M2M-Origin': `C-Originator`, //tool에서 설정해야됨
+        'X-M2M-Origin': `CAdmin`, //tool에서 설정해야됨
+        "Accept" : "application/json",
         'Content-Type': `application/json;ty=${attrs["header"]["ty"]}`,
         // 'Cache-Control': 'no-cache',
         // 'Access-Control-Allow-Origin' : '*',
+        "X-M2M-RVI" : "3",
+        "X-M2M-RI" : 2
     }
 
     var body_attr = {}
@@ -123,7 +124,8 @@ async function create_resource(attr, path, targetIP)
     console.log("body attrs", body_attr);
 
     await sleep(1000);
-
+    // console.log("header :", headers);
+    // console.log("body :", body_attr)
     try {
         const response = await axios.post(url, body_attr, {
           headers: headers,
