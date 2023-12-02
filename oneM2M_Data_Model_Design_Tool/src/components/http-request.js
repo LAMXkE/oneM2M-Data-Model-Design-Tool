@@ -97,7 +97,7 @@ async function create_resource(attr, path, targetIP)
         // 'Cache-Control': 'no-cache',
         // 'Access-Control-Allow-Origin' : '*',
         "X-M2M-RVI" : "3",
-        "X-M2M-RI" : 2
+        "X-M2M-RI" : 12345
     }
 
     var body_attr = {}
@@ -108,6 +108,10 @@ async function create_resource(attr, path, targetIP)
     else if (now_type == "ae")
     {
       body_attr = {"m2m:ae" : attrs["body"]}
+      if (!body_attr.hasOwnProperty("rr"))
+      {
+        body_attr["rr"] = false;
+      }
     }
     else if (now_type == "cnt")
     {
