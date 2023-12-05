@@ -151,22 +151,6 @@ import get_jsonfile from "@/components/json-parser.js";
 import mq_re from "@/components/mq-re.vue";
 import http_cse_retrieve from "@/components/retrieve_cse.js"
 
-const RT_MIXED = 0;
-const RT_ACP = 1;
-const RT_AE = 2;
-const RT_CNT = 3;
-const RT_CIN = 4;
-const RT_CSE = 5;
-const RT_FCNT = 7;
-const RT_TS = 8;
-const RT_GRP = 9;
-const RT_TSR = 10;
-const RT_MGMTOBJ = 11;
-const RT_NODE = 14;
-const RT_CSR = 16;
-const RT_SUB = 23;
-
-
 export default {
   name: "App",
   display: "app",
@@ -198,7 +182,7 @@ export default {
           { name: "ACP", ty: RT.ACP },
           { name: "GRP", ty: RT.GRP },
           { name: "SUB", ty: RT.SUB },
-          // { name: "FCNT", ty: RT_FCNT },
+          // { name: "FCNT", ty: RT.FCNT },
       ]
       ,
       attrSetting : false,
@@ -336,7 +320,7 @@ export default {
         'GRP': ['SUB'],
         'ACP': ['SUB'],
       };
-      const typeNum = [RT_MIXED, RT_ACP, RT_AE, RT_CNT, RT_CIN, RT_CSE, RT_GRP, RT_CSR, RT_SUB];                                              // TinyIoT Resource Type
+      const typeNum = [RT.MIXED, RT.ACP, RT.AE, RT.CNT, RT.CIN, RT.CSE, RT.GRP, RT.CSR, RT.SUB];                                              // TinyIoT Resource Type
       
       const resourceType = ['ACP', 'AE', 'CNT', 'CIN', 'CSE', 'GRP', 'CSR', 'SUB'];                                                           // Resource Type
       const serializations = ['application/json', 'application/xml', 'application/cbor'];                                                     // Serialization Type
@@ -347,9 +331,9 @@ export default {
       // const consistencyStrategy = ['ABANDON_MEMBER', 'ABANDON_GROUP', 'SET_MIXED'];
 
       const attributeCSE = data.attrs;
-      if(data.ty == RT_CSE) { /* CSE */
+      if(data.ty == RT.CSE) { /* CSE */
         if(
-          (attributeCSE.ty !== RT_CSE) ||                                                                                                     // Mandatory Attribute
+          (attributeCSE.ty !== RT.CSE) ||                                                                                                     // Mandatory Attribute
           (typeof attributeCSE.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attributeCSE.rn)) ||                                          // resourceName
           (typeof attributeCSE.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attributeCSE.lbl)) ||                                           // labels
           (typeof attributeCSE.acpi !== "undefined" && typeof attributeCSE.acpi !== 'string') ||                                              // accessControlPolicyIDs
@@ -386,9 +370,9 @@ export default {
           }
         }
         const attribute = task.attrs;
-        if(task.ty == RT_AE){ /* AE */
+        if(task.ty == RT.ACP){ /* AE */
           if(
-            (typeof attribute.pv == "undefined" || typeof attribute.pvs == "undefined" || attribute.ty !== RT_ACP) ||                         // Mandatory Attribute
+            (typeof attribute.pv == "undefined" || typeof attribute.pvs == "undefined" || attribute.ty !== RT.ACP) ||                         // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.pv.acop == "undefined" && (attribute.pv.acop < 1 || attribute.pv.acop > 6)) ||                                  // privileges accessControlOperations
@@ -414,9 +398,9 @@ export default {
             }
           }
         }
-        else if(task.ty == RT_AE){ /* AE */
+        else if(task.ty == RT.AE){ /* AE */
           if(
-            (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || attribute.srv == "undefined" || attribute.ty !== RT_AE) ||             // Mandatory Attribute
+            (typeof attribute.api == "undefined" || typeof attribute.rr == "undefined" || attribute.srv == "undefined" || attribute.ty !== RT.AE) ||             // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                                                 // resourceName
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                                                  // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                                     // accessControlPolicyIDs
@@ -441,9 +425,9 @@ export default {
             }
           }
         }
-        if(task.ty == RT_CNT){ /* CNT */
+        if(task.ty == RT.CNT){ /* CNT */
           if(
-            (attribute.ty !== RT_CNT) ||                                                                                                      // Mandatory Attribute
+            (attribute.ty !== RT.CNT) ||                                                                                                      // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
@@ -458,9 +442,9 @@ export default {
             return false;
           }
         }        
-        if(task.ty == RT_SUB){ /* SUB */
+        if(task.ty == RT.SUB){ /* SUB */
           if(
-            (typeof attribute.nu == "undefined" || attribute.ty !== RT_SUB) ||                                                                // Mandatory Attribute
+            (typeof attribute.nu == "undefined" || attribute.ty !== RT.SUB) ||                                                                // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.cr !== "undefined" && typeof attribute.cr !== 'boolean') ||                                                     // creator
@@ -474,9 +458,9 @@ export default {
             return false;
           }
         }
-        if(task.ty == RT_GRP){ /* GRP */
+        if(task.ty == RT.GRP){ /* GRP */
           if(
-            (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined" || attribute.ty !== RT_GRP) ||                        // Mandatory Attribute
+            (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined" || attribute.ty !== RT.GRP) ||                        // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
             (typeof attribute.acpi !== "undefined" && typeof attribute.acpi !== 'string') ||                                                  // accessControlPolicyIDs
             (typeof attribute.at !== "undefined" && typeof attribute.at !== 'string') ||                                                      // announceTo
