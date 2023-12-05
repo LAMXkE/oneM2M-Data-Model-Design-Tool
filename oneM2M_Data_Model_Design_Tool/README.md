@@ -1,7 +1,52 @@
 # oneM2M_Data_Model_Design_Tool
 
 ## Introduction
-This tool is designed to help you design oneM2M data model. It is based on the oneM2M data standards described in TS-0001. The tool is written in Vue3.
+This tool is designed to help you design oneM2M data model. It provides various explanation for each resources and attributes. Including the validation process of the inputs. 
+This tool is based on the oneM2M data standards described in TS-0001. The tool is written in Vue3.
 
-## Installation
-// Todo
+Demopage: Todo
+
+oneM2M is a global partnership project founded in 2012 and constituted by 8 of the world's leading ICT standards development organizations, notably: ARIB (Japan), ATIS (United States), CCSA (China), ETSI (Europe), TIA (USA), TSDSI (India), TTA (Korea) and TTC (Japan). The goal of the organization is to create a global technical standard for interoperability concerning the architecture, API specifications, security and enrolment solutions for Machine-to-Machine and IoT technologies based on requirements contributed by it’s members.
+
+For more information about oneM2M, please visit the official website: https://www.onem2m.org/
+
+## Usage
+
+### Prerequisites
+- Node.js 20.0.0 or higher
+- npm 6.14.0 or higher
+
+
+### Launch the app
+This is temporary solution. The app will be deployed with other means in the future.
+1. Clone the repository
+    ```
+    $ git clone https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool
+    ```
+2. Install dependencies
+    ```
+    npm install
+    ```
+3. Run the app
+    ```
+    npm run dev
+    ```
+4. Open the app in your browser
+    ```
+    http://localhost:5173/
+    ```
+
+
+## How to use the app
+
+// TODO
+
+### Main page
+
+### Load CSE from remote server
+
+### Create a new resource
+
+### Set the attributes
+
+### remote creation
