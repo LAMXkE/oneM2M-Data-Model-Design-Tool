@@ -110,7 +110,7 @@ async function create_resource(attr, path, targetIP)
       body_attr = {"m2m:ae" : attrs["body"]}
       if (!body_attr.hasOwnProperty("rr"))
       {
-        body_attr["rr"] = false;
+        body_attr["m2m:ae"]["rr"] = false;
       }
     }
     else if (now_type == "cnt")
@@ -121,13 +121,17 @@ async function create_resource(attr, path, targetIP)
     {
       body_attr = {"m2m:grp" : attrs["body"]}
     }
-    else
+    else if (now_type == "sub")
     {
       body_attr = {"m2m:sub" : attrs["body"]}
     }
+    else
+    {
+      return;
+    }
     console.log("body attrs", body_attr);
-
-    await sleep(1000);
+    
+    // await sleep(1000);
     // console.log("header :", headers);
     // console.log("body :", body_attr)
     try {
