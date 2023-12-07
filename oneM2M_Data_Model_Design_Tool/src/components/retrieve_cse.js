@@ -11,7 +11,10 @@ async function http_cse_retrieve(originator, host, port, path, callback)
     // console.log("url, origin", url, originator);
 
     const headers = {
-        "X-M2M-Origin": originator
+        "X-M2M-Origin": originator,
+        "X-M2M-RVI" : 3,
+        "X-M2M-RI" : 12345,
+        "Accept" : "application/json"
     }
     // console.log(headers);
   // operation code RETRIEVE 2
@@ -21,7 +24,7 @@ async function http_cse_retrieve(originator, host, port, path, callback)
           withCredentials: false,
         });
         console.log(`[CSE data Retrieved]`)
-        // console.log(response.data);
+        console.log(response);
         // return response.data;
         callback(response.data);
       } catch (error) {

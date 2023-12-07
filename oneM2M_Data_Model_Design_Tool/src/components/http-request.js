@@ -10,6 +10,7 @@ function sleep(ms) {
 
 async function select_resource(attr)
 {
+  // console.log(attr);
   const attr_list = {
     "header" : {},
     "body" : {},
@@ -69,19 +70,16 @@ async function select_resource(attr)
   return attr_list;
 }
 
-
-/*
-
-*/
 async function create_resource(attr, path, targetIP)
 { 
   // console.log(path);
   // console.log("create_resource : ", targetIP); 
+  targetIP = targetIP.replace(/\/[^/]*$/, ''); 
   let result = path.replace(/\/[^/]*$/, '');
   // console.log("path : ", result);
     // console.log("hello im free");
-     const url = `${targetIP}${result}`;
-    console.log(url);
+    const url = `${targetIP}${result}`;
+    console.log("now request url", url);
     var attrs = {};
 
     attrs = await select_resource(attr);
@@ -93,10 +91,13 @@ async function create_resource(attr, path, targetIP)
  
   
     const headers = {
-        'X-M2M-Origin': `C-Originator`, //tool에서 설정해야됨
+        'X-M2M-Origin': `CAdmin`, //tool에서 설정해야됨
+        "Accept" : "application/json",
         'Content-Type': `application/json;ty=${attrs["header"]["ty"]}`,
         // 'Cache-Control': 'no-cache',
         // 'Access-Control-Allow-Origin' : '*',
+        "X-M2M-RVI" : "3",
+        "X-M2M-RI" : 12345
     }
 
     var body_attr = {}
@@ -107,6 +108,10 @@ async function create_resource(attr, path, targetIP)
     else if (now_type == "ae")
     {
       body_attr = {"m2m:ae" : attrs["body"]}
+      if (!body_attr.hasOwnProperty("rr"))
+      {
+        body_attr["m2m:ae"]["rr"] = false;
+      }
     }
     else if (now_type == "cnt")
     {
@@ -116,14 +121,19 @@ async function create_resource(attr, path, targetIP)
     {
       body_attr = {"m2m:grp" : attrs["body"]}
     }
-    else
+    else if (now_type == "sub")
     {
       body_attr = {"m2m:sub" : attrs["body"]}
     }
+    else
+    {
+      return;
+    }
     console.log("body attrs", body_attr);
-
-    await sleep(1000);
-
+    
+    // await sleep(1000);
+    // console.log("header :", headers);
+    // console.log("body :", body_attr)
     try {
         const response = await axios.post(url, body_attr, {
           headers: headers,
