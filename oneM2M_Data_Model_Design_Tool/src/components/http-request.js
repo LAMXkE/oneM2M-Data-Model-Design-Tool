@@ -78,10 +78,10 @@ async function create_resource(attr, path, targetIP)
   // console.log(path);
   // console.log("create_resource : ", targetIP); 
   let result = path.replace(/\/[^/]*$/, '');
-  // console.log("path : ", result);
+  //  console.log("path : ", result);
     // console.log("hello im free");
      const url = `${targetIP}${result}`;
-    console.log(url);
+    // console.log(url);
     var attrs = {};
 
     attrs = await select_resource(attr);

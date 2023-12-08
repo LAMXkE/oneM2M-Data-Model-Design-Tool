@@ -117,6 +117,7 @@ export function bfs_json(jsonData, targetIP) {
       }
     } else if (typeof currentNode === 'object') 
     {
+      console.log(currentNode);
       if (currentNode.hasOwnProperty("name") && currentNode.hasOwnProperty("ty")) 
       {
         if (currentNode.hasOwnProperty("id")) 
