@@ -365,12 +365,12 @@ export default {
       for (const task of data.tasks) { // Recursively check the tasks of this task by calling this function again
         if (Array.isArray(task.tasks)) { /* childResource */
           if (task.tasks.some(subTask => !allowedResourcesMap[task.name].includes(subTask.name))) {
-            alert("Invalid ChildResource(AE)"); 
+            alert("Invalid ChildResource: ", task.name); 
             return false;
           }
         }
         const attribute = task.attrs;
-        if(task.ty == RT.ACP){ /* AE */
+        if(task.ty == RT.ACP){ /* ACP */
           if(
             (typeof attribute.pv == "undefined" || typeof attribute.pvs == "undefined" || attribute.ty !== RT.ACP) ||                         // Mandatory Attribute
             (typeof attribute.rn !== "undefined" && !/^[a-zA-Z0-9\-._]*$/.test(attribute.rn)) ||                                              // resourceName
@@ -425,7 +425,7 @@ export default {
             }
           }
         }
-        if(task.ty == RT.CNT){ /* CNT */
+        else if(task.ty == RT.CNT){ /* CNT */
           if(
             (attribute.ty !== RT.CNT) ||                                                                                                      // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -442,7 +442,7 @@ export default {
             return false;
           }
         }        
-        if(task.ty == RT.SUB){ /* SUB */
+        else if(task.ty == RT.SUB){ /* SUB */
           if(
             (typeof attribute.nu == "undefined" || attribute.ty !== RT.SUB) ||                                                                // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
@@ -458,7 +458,7 @@ export default {
             return false;
           }
         }
-        if(task.ty == RT.GRP){ /* GRP */
+        else if(task.ty == RT.GRP){ /* GRP */
           if(
             (typeof attribute.mnm == "undefined" || typeof attribute.mid == "undefined" || attribute.ty !== RT.GRP) ||                        // Mandatory Attribute
             (typeof attribute.lbl !== "undefined" && !/^[a-zA-Z0-9:]*$/.test(attribute.lbl)) ||                                               // labels
