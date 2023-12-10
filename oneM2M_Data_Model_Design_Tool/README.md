@@ -4,10 +4,6 @@
 This tool is designed to help you design oneM2M data model. It provides various explanation for each resources and attributes. Including the validation process of the inputs. 
 This tool is based on the oneM2M data standards described in TS-0001. The tool is written in Vue3.
 
-Demopage: Todo
-
-oneM2M is a global partnership project founded in 2012 and constituted by 8 of the world's leading ICT standards development organizations, notably: ARIB (Japan), ATIS (United States), CCSA (China), ETSI (Europe), TIA (USA), TSDSI (India), TTA (Korea) and TTC (Japan). The goal of the organization is to create a global technical standard for interoperability concerning the architecture, API specifications, security and enrolment solutions for Machine-to-Machine and IoT technologies based on requirements contributed by it’s members.
-
 For more information about oneM2M, please visit the official website: https://www.onem2m.org/
 
 ## Usage
