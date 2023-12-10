@@ -57,7 +57,8 @@ This is temporary solution. The app will be deployed with other means in the fut
 ![image](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/76b8ad1a-0218-400b-a949-74c762378dd5)
 
 ### Upload JSOM file
-![image](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/cfea9365-b507-43f2-8b1d-3f1235abb02b) ![image](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/fad46aab-5caa-4620-aec2-d9d9e60185f2)
+<img src="https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/cfea9365-b507-43f2-8b1d-3f1235abb02b" width="50%">
+<img src="https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/fad46aab-5caa-4620-aec2-d9d9e60185f2" width="50%">
 
 
 
