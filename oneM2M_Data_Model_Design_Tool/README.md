@@ -48,6 +48,7 @@ This is temporary solution. The app will be deployed with other means in the fut
 
 ### Create a new resource
 - Drag & Drop AE
+  
 ![image](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/9b06df1d-fe6c-4f28-9a33-b43e4ae867ae)
 
 ### Set the attributes
