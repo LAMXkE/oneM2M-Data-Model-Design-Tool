@@ -1,7 +1,60 @@
 # oneM2M_Data_Model_Design_Tool
 
 ## Introduction
-This tool is designed to help you design oneM2M data model. It is based on the oneM2M data standards described in TS-0001. The tool is written in Vue3.
+This tool is designed to help you design oneM2M data model. It provides various explanation for each resources and attributes. Including the validation process of the inputs. 
+This tool is based on the oneM2M data standards described in TS-0001. The tool is written in Vue3.
 
-## Installation
-// Todo
+For more information about oneM2M, please visit the official website: https://www.onem2m.org/
+
+## Usage
+
+### Prerequisites
+- Node.js 20.0.0 or higher
+- npm 6.14.0 or higher
+
+
+### Launch the app
+This is temporary solution. The app will be deployed with other means in the future.
+1. Clone the repository
+    ```
+    $ git clone https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool
+    ```
+2. Install dependencies
+    ```
+    npm install
+    ```
+3. Run the app
+    ```
+    npm run dev
+    ```
+4. Open the app in your browser
+    ```
+    http://localhost:5173/
+    ```
+
+
+## How to use the app
+
+// TODO
+
+### Main page
+![image](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/6f4089b7-4e52-4cd1-8528-eaa5bbd9fb18)
+
+### Load CSE from remote server
+
+### Remote creation
+
+### Create a new resource
+- Drag & Drop Resources
+
+  
+![dragNdrop](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39945981/8c429d31-a3d3-404f-9fc6-f362358cade9)
+
+### Set the attributes
+![image](https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/76b8ad1a-0218-400b-a949-74c762378dd5)
+
+### Upload JSOM file
+<img src="https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/cfea9365-b507-43f2-8b1d-3f1235abb02b" width="50%"><img src="https://github.com/LAMXkE/oneM2M-Data-Model-Design-Tool/assets/39479096/fad46aab-5caa-4620-aec2-d9d9e60185f2" width="50%">
+
+
+
